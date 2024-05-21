@@ -1,0 +1,559 @@
+########################################################
+# Created on May 11 2024
+# @author: Johnathan Phillips
+# @email: j.s.phillips@wustl.edu
+
+# Purpose: To unpack and analyze data for the Pb-212 decay using pulse-shape analysis.
+#          PSD is performed by the digitizer and is read out as a psd_parameter.
+
+# Detector: Liquid scintillation using the CAEN 5730B digitizer
+########################################################
+
+# Import necessary modules
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+from scipy.integrate import quad
+import matplotlib as mpl
+
+# Sets the plot style
+plt.rcParams['font.size'] = 12
+plt.rcParams['figure.dpi'] = 100
+plt.rcParams["savefig.bbox"] = "tight"
+plt.rcParams['xtick.major.width'] = 1.0
+plt.rcParams['xtick.minor.width'] = 1.0
+plt.rcParams['xtick.major.size'] = 8.0
+plt.rcParams['xtick.minor.size'] = 4.0
+plt.rcParams['xtick.top'] = True
+plt.rcParams['xtick.direction'] = 'in'
+plt.rcParams['xtick.minor.bottom'] = True
+plt.rcParams['xtick.minor.top'] = True
+plt.rcParams['xtick.minor.visible'] = True
+
+
+plt.rcParams['ytick.major.width'] = 1.0
+plt.rcParams['ytick.minor.width'] = 1.0
+plt.rcParams['ytick.major.size'] = 8.0
+plt.rcParams['ytick.minor.size'] = 4.0
+plt.rcParams['ytick.right'] = True
+plt.rcParams['ytick.direction'] = 'in'
+plt.rcParams['ytick.minor.right'] = True
+plt.rcParams['ytick.minor.left'] = True
+plt.rcParams['ytick.minor.visible'] = True
+
+
+# Unpacks the CAEN data in csv format. Can choose to unpack all data or some using alldat
+# Can also choose to import the waveforms (a lot of data) or just the first 6 columns
+#   which contain the important information for each event
+def Unpack(name, alldat, waves):
+    if alldat is True and waves is True:
+        data = np.genfromtxt(name, skip_header = True, delimiter = ';')
+    elif alldat is False and waves is True:
+        data = np.genfromtxt(name, skip_header = True, delimiter =';', max_rows = 10000)
+    elif alldat is True and waves is False:
+        data = np.genfromtxt(name, skip_header = True, delimiter =';', usecols = (0, 1, 2, 3, 4, 5))
+    else:
+        data = np.genfromtxt(name, skip_header = True, delimiter =';', max_rows = 10000, usecols = (0, 1, 2, 3, 4, 5))
+
+    return data
+
+
+# Functions to accept and output an energy array given PSD gates and the PSD array
+# For cut A - straight lines
+# return trace array indices so that you can look at those waveforms
+def PSDcutA(low, high, Earr, PSDarr):
+    Filtarr = []
+    trarr = []
+
+    # iterates over the PSD array and filters for the high and low gates
+    for i in range(len(PSDarr)):
+        if PSDarr[i] >= low and PSDarr[i] <= high:
+            Filtarr.append(Earr[i])
+            trarr.append(i)
+
+    return Filtarr, trarr
+
+# For cut B - negatively sloped line
+# return trace array indices so that you can look at those waveforms
+def PSDcutB(Earr, PSDarr, psdval):
+    Filtarr = []
+    trarr = []
+
+    # iterates over the PSD array and filters for sloped gate
+    for i in range(len(PSDarr)):
+        if PSDarr[i] >= -0.00021973 * Earr[i] + 1 and PSDarr[i] >= psdval:
+            Filtarr.append(Earr[i])
+            trarr.append(i)
+
+    return Filtarr, trarr
+
+# Make an energy cut for a psd region
+# return trace array indices so that you can look at those waveforms
+def Ecut(Earr, PSDarr, Eval, low, high):
+    Filtarr = []
+    trarr = []
+
+    # iterates over the PSD array and filters for sloped gate
+    for i in range(len(Earr)):
+        if Earr[i] >= Eval and PSDarr[i] >= low and PSDarr[i] <= high:
+            Filtarr.append(Earr[i])
+            trarr.append(i)
+
+    return Filtarr, trarr
+
+# Function that accepts filtered energy data and returns a double Gaussian fit
+# Parameters go as amplitude, position, standard deviation
+# bl is a parameter for a constant baseline noise
+def DoubleGaussFit(x, a1, mu1, s1, a2, mu2, s2, bl):
+
+    return a1 * np.exp(-((x - mu1)**2)/(2 * s1**2)) + a2 * np.exp(-((x - mu2)**2)/(2 * s2**2)) + bl
+
+
+def GaussFit(x, a, mu, s):
+
+    return a * np.exp(-((x - mu)**2)/(2 * s**2))
+
+
+def main():
+    # Read the CAEN data file in csv format
+    # Different files available to process
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_07_t600s.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_08a_t600.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_09a_t1800_10nsPG.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_09a_t2700.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_10a_t7200_10nsPG.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_11a_t14400_10nsPG.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_12a_t14400_10nsPG.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_13a_t28800_10nsPG.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_14a_t28800_10nsPG.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_15a_t28800_10nsPG.csv'
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_16a_t28800_10nsPG_400nsLG.csv'
+
+    # Files that include a veto for cosmic ray events, now have a channel number
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\DataR_CH1@DT5730B_722_WF_Pb212_Ar_2024_05_17a_t600_10nsPG_410nsLG_NoVeto.csv'
+
+    # Files that contain two channels (0, 1) but are a single file
+    # These are set up so that:
+    #   cosmic veto paddle: chan 0
+    #   LSC:                chan 1
+    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_20a_t3600_10nsPG_410nsLG_SingleFile.csv'
+    data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_20a_t7200_10nsPG_410nsLG_100lsbCR_SingleFile.csv'
+
+    # Unpacks the data, choose alldat to True if you want to read all the file
+    # Set wavesdat to True if you want the waveforms
+    # Truncated version is set to 10000 events
+    alldat = True
+    wavesdat = True
+    data = Unpack(data_file, alldat, wavesdat)
+
+    # The arrays used to store all the event information
+    energy = []
+    energy_short = []
+    time = []
+    channel = []
+    psd_parameter = []
+    traces = []
+
+    # The arrays used to store pairs of events across channels
+    # Allows you to make a delta-T distribution and cut out cosmic rays
+    time_pairs = []
+    channel_pairs = []
+    index_pairs = []
+    dT = []
+    coinc_wind = 1000000 # broad time window to ignore non-correlated events, 1 microsecond in picoseconds
+    t_cuthigh = 5000 # actual time cut in picoseconds
+    t_cutlow = 2000
+
+    # Arrays for time filtered events
+    energy_tfilt = []
+    psd_parameter_tfilt = []
+
+
+    # Store the channel number, timestamp, and energy
+    for i in range(len(data)):
+        # only interested in events with energyshort and energy > 0
+        # skip if not > 0
+        if data[i][3] > 0 and data[i][4] > 0:
+            psd = (data[i][3]-data[i][4])/data[i][3]
+            if (psd < 0 or psd > 1) and data[i][1] == 1: continue # ignores events with bad psd
+            #if data[i][1] == 0: continue
+            channel.append(data[i][1])
+            time.append(data[i][2])
+            energy.append(data[i][3])
+            energy_short.append(data[i][4])
+            psd_parameter.append(psd)  # = (energy-energy_short)/energy
+            if wavesdat is True: traces.append(data[i][6:])
+
+    # Convert the data into numpy arrays
+    energy = np.array(energy)
+    energy_short = np.array(energy_short)
+    #psd_parameter = np.array(psd_parameter)
+    time = np.array(time)
+    channel = np.array(channel)
+    traces = np.array(traces)
+    psd_err = 0
+
+    #Checks how many events have an unrealistic PSD parameter
+    for i in range(len(psd_parameter)):
+        if psd_parameter[i] < 0 or psd_parameter[i] > 1:
+            #print(energy[i], "  ", psd_parameter[i])
+            psd_err = psd_err + 1
+    print("PSD too low or too high: ", psd_err)
+
+    # Finds the paired events within a microsecond window
+    # Only used if the file contains two channels
+    # Stores the of the event so you can find the energy and psd_parameter
+    # Always sorted as [ channel 0 , channel 1 ]
+    for i in range(len(channel) - 1):
+        if np.abs(time[i+1] - time[i]) <= coinc_wind and channel[i+1] != channel[i]:
+            if channel[i] == 0:
+                channel_pairs.append([channel[i], channel[i+1]])
+                index_pairs.append([i, i+1])
+                time_pairs.append([time[i], time[i+1]])
+            else:
+                channel_pairs.append([channel[i+1], channel[i]])
+                index_pairs.append([i+1, i])
+                time_pairs.append([time[i+1], time[i]])
+
+    for i in range(len(channel_pairs)):
+        dT.append(time_pairs[i][0] - time_pairs[i][1])
+
+    time_pairs = np.array(time_pairs)
+    channel_pairs = np.array(channel_pairs)
+    index_pairs = np.array(index_pairs)
+    dT = np.array(dT)
+
+    print('The number of time pairs is: ', len(time_pairs))
+
+    # If pairs are found, plot the delta-T distribution and make a time cut
+    if len(channel_pairs) > 0:
+        dTf, dTax = plt.subplots()
+        dTax.set_title(r'$\Delta$T Distribution')
+        dTax.set_ylabel('Counts')
+        dTax.set_xlabel(r'Time (ps)')
+
+        #Set some reasonable time window, 2 microseconds
+        tStart = -25000
+        tEnd = 25000
+        dTax.set_xlim([tStart, tEnd])
+        dTax.hist(dT, bins=1000, range = [tStart, tEnd])
+        plt.show()
+
+        # Make a time cut here
+        # Want the value from channel 1
+        for i in range(len(time_pairs)):
+            if dT[i] >= t_cutlow and dT[i] <= t_cuthigh:
+                energy_tfilt.append(energy[index_pairs[i][1]])
+                psd_parameter_tfilt.append(psd_parameter[index_pairs[i][1]])
+
+
+    # Plot traces.
+    # Set up plot window.
+    if wavesdat is True:
+        f, ax = plt.subplots()
+        ax.set_title('Traces')
+        ax.set_ylabel('Voltage')
+        ax.set_xlabel('Time (ns)')
+
+        xStart = 0
+        xEnd = len(traces[1]) - 1
+        wavetime = np.linspace(xStart, xEnd, len(traces[1]))
+
+        # Convert sample number to time
+        # CAEN samples every 2 ns
+        wavetime = wavetime * 2
+
+        for i in range(1): # Plot the first five neutron traces
+            ax.plot(wavetime, traces[0], label=' trace')
+        ax.set_xlim([xStart, xEnd * 2])
+        ax.set_ylim([9000, 14000])
+
+        #plt.legend()
+        #plt.show(block=True) # Don't block terminal by default.
+        #quit()
+
+    # Now we start plotting the raw data
+
+    # Specify a number of bins
+    nbins = 1000
+
+    # Plots the raw spectrum
+    fig_rawE, ax_rawE = plt.subplots()
+    ax_rawE.hist(energy, bins=nbins, range = [0,4095])
+    ax_rawE.set_xlabel('ADC Channel')
+    ax_rawE.set_ylabel('Counts')
+    plt.show()
+
+    # Plots the PSD parameter
+    fig_PSD, ax_PSD = plt.subplots()
+    ax_PSD.hist(psd_parameter,bins=4000, range = [0,1])
+    ax_PSD.set_xlabel('PSD Parameter')
+    ax_PSD.set_ylabel('Counts')
+    plt.xlim([0.,1.])
+    plt.show()
+
+    # Plots the PSD parameter vs the energy
+    fig_psdE, ax_psdE = plt.subplots()
+    h = ax_psdE.hist2d(energy, psd_parameter, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    fig_psdE.colorbar(h[3],ax=ax_psdE)
+    plt.ylim([0., 1.])
+    ax_psdE.set_ylabel('PSD parameter')
+    ax_psdE.set_xlabel('ADC Channel')
+    plt.show()
+
+    # Plots the PSD parameter vs the energy for time filtered events - should be cosmic arrays
+    if len(energy_tfilt) > 0:
+        fig_psdE_tfilt, ax_psdE_tfilt = plt.subplots()
+        h = ax_psdE_tfilt.hist2d(energy_tfilt, psd_parameter_tfilt, bins=[100,100], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+        fig_psdE_tfilt.colorbar(h[3],ax=ax_psdE)
+        plt.ylim([0., 1.])
+        ax_psdE_tfilt.set_ylabel('PSD parameter')
+        ax_psdE_tfilt.set_xlabel('ADC Channel')
+        plt.show()
+
+    # Sets your A PSD gate - straight lines
+    # Also returns an array containing the indices for the traces
+    PSDlowA = 0.13
+    PSDhighA = 0.25
+    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy, psd_parameter)
+    print("Events that have a non-zero energyshort and energylong: ", len(energy))
+    print("Events inside the PSD cut A: ", len(energy_filtA))
+
+    # Sets your B PSD gate - negatively sloped to get the mixed beta/alpha
+    # Also cut to not overlap with gate A
+    # The line equation is stored in the corresponding function
+    # Also returns an array containing the indices for the traces
+    energy_filtB, tracesind_filtB = PSDcutB(energy, psd_parameter, PSDhighA)
+    print("Events inside the PSD cut B: ", len(energy_filtB))
+
+    # Sets an energy gate for mixed beta/alpha that don't fall into the short gate
+    # E cut set to 1200, psd cut set to PSDlowA
+    # Also returns an array containing the indices for the traces
+    energy_filtC, tracesind_filtC = Ecut(energy, psd_parameter, 0, 0, 0.25)
+    print("Events inside the energy cut (C): ", len(energy_filtC))
+    print("Rate of events inside cut C (/s): ", len(energy_filtC) / (7200))  # Use the run time
+    print("")
+
+    # Plots traces for each cut
+    if wavesdat is True:
+        ftr_A, axtr_A = plt.subplots()
+        # Looks for traces that fall within the gate and plot them
+        for i in range(20):
+            axtr_A.plot(wavetime, traces[tracesind_filtA[i]], label=' trace')
+        axtr_A.set_title('Traces in Cut A')
+        axtr_A.set_ylabel('Voltage')
+        yStart = 9000
+        yEnd = 14000
+        axtr_A.set_xlabel('Time (ns)')
+        axtr_A.set_xlim([xStart, xEnd * 2])
+        axtr_A.set_ylim([8000, yEnd])
+        plt.show(block=True)  # Don't block terminal by default.
+
+        ftr_B, axtr_B = plt.subplots()
+        # Looks for traces that fall within the gate and plot them
+        for i in range(10):
+            if i < len(energy_filtB): axtr_B.plot(wavetime, traces[tracesind_filtB[i]], label=' trace')
+        axtr_B.set_title('Traces in cut B')
+        axtr_B.set_ylabel('Voltage')
+        axtr_B.set_xlabel('Time (ns)')
+        axtr_B.set_xlim([xStart, xEnd * 2])
+        axtr_B.set_ylim([yStart, yEnd])
+        plt.show(block=True)  # Don't block terminal by default.
+
+        ftr_C, axtr_C = plt.subplots()
+        # Looks for traces that fall within the gate and plot them
+        for i in range(10):
+            axtr_C.plot(wavetime, traces[tracesind_filtC[i]], label=' trace')
+        axtr_C.set_title('Traces in Cut C')
+        axtr_C.set_ylabel('Voltage')
+        axtr_C.set_xlabel('Time (ns)')
+        axtr_C.set_xlim([xStart, xEnd * 2])
+        axtr_C.set_ylim([8000, yEnd])
+
+        # Draws the long and short gates if you want
+        #LG_xline = np.linspace(86,196,2)
+        #LG_yline = np.linspace(12000,12000,2)
+        #newLG_xline = np.linspace(86,396,2)
+        #newLG_yline = np.linspace(11500,11500,2)
+        #HF_xline = [396, 396]
+        #HF_yline = [9000, 14000]
+        #TF_xline = [96, 1096]
+        #TF_yline = [11000, 11000]
+        #axtr_C.plot(LG_xline, LG_yline, color='black', linewidth = 2)
+        #axtr_C.plot(newLG_xline, newLG_yline, color='blue', linewidth = 2)
+        #axtr_C.plot(TF_xline, TF_yline, color='green', linewidth = 2)
+        #axtr_C.plot(HF_xline, HF_yline, color='red', linestyle='dashed', linewidth = 2)
+
+        plt.show(block=True)  # Don't block terminal by default.
+
+    # Plots the PSD parameter vs the energy with the cut
+    # Draws the straight A cuts
+    xline = np.linspace(0,4096,10)
+    yline = np.linspace(0,PSDlowA,10)
+    PSDlowlineA = np.full(len(xline), PSDlowA)
+    PSDhighlineA = np.full(len(xline), PSDhighA)
+
+    #Draws the B cut
+    xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
+    PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
+    xlineB = np.append(xlineB, 4096)
+    PSDlineB = np.append(PSDlineB, PSDhighA)
+    ElineC = np.full(len(yline), 1000)
+
+    fig_psdE2, ax_psdE2 = plt.subplots()
+    h2 = ax_psdE2.hist2d(energy, psd_parameter, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    fig_psdE2.colorbar(h2[3],ax=ax_psdE2)
+    ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
+    ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
+    ax_psdE2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
+    #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
+    plt.ylim([0., 1.])
+
+    ax_psdE2.set_ylabel('PSD parameter')
+    ax_psdE2.set_xlabel('ADC Channel')
+    plt.show()
+
+    # Plots the filtered energy data for cut A
+    fig_filtEA, ax_filtEA = plt.subplots()
+    (data_entries, bins, patches) = ax_filtEA.hist(energy_filtA, bins=nbins, range = [0,4095])
+    ax_filtEA.set_xlabel('ADC Channel')
+    ax_filtEA.set_ylabel('Counts')
+
+    plt.show()
+
+    # Plots the filtered energy data for cut B
+    fig_filtEB, ax_filtEB = plt.subplots()
+    (data_entriesB, binsB, patchesB) = ax_filtEB.hist(energy_filtB, bins=nbins, range = [0,4095])
+    ax_filtEB.set_xlabel('ADC Channel')
+    ax_filtEB.set_ylabel('Counts')
+    plt.xlim([0., 4096.])
+
+    plt.show()
+
+    # Plots the filtered energy data for cut C
+    fig_filtEC, ax_filtEC = plt.subplots()
+    (data_entriesC, binsC, patchesC) = ax_filtEC.hist(energy_filtC, bins=nbins, range = [0,4095])
+    ax_filtEC.set_xlabel('ADC Channel')
+    ax_filtEC.set_ylabel('Counts')
+
+    plt.show()
+
+    # Plots the filtered energy for cuts A + B + C to compare with total
+    fig_filtEtot, ax_filtEtot = plt.subplots()
+    (data_entriestot, binstot, patchestot) = ax_filtEtot.hist(energy_filtA + energy_filtB + energy_filtC, bins=nbins, range = [0,4095])
+    ax_filtEtot.set_xlabel('ADC Channel')
+    ax_filtEtot.set_ylabel('Counts')
+
+    plt.show()
+
+    # Prints out the backgrounds
+    print("Total background: ", len(energy)/3600, " CPS")
+    print("Total beta background: ", len(energy_filtC)/3600, " CPS")
+    EC_bool = np.asarray(energy_filtC)
+    print("Beta background above 100 ADC Chans: ", (EC_bool > 100).sum()/3600, " CPS")
+    print("Beta background above 200 ADC Chans: ", (EC_bool > 200).sum()/3600, " CPS")
+
+    # Get bin centers
+    bincenters = np.array([0.5 * (bins[i] + bins[i + 1])  for i in range(len(bins) - 1)])
+
+    # Find the bin width
+    binwidth = bins[1] - bins[0]
+
+    # Define range for each peak
+    lower_bound1 = 500
+    upper_bound1 = 1050
+
+    lower_bound2 = 1200
+    upper_bound2 = 1800
+
+    # Get points for each bin center
+    xpeak1 = bincenters[bincenters>lower_bound1]
+    x1 = xpeak1[xpeak1<upper_bound1]
+    x1 = x1.ravel()
+
+    y1 = data_entries[bincenters>lower_bound1]
+    y1 = y1[xpeak1<upper_bound1]
+    y1 = y1.ravel()
+
+    xpeak2 = bincenters[bincenters>lower_bound2]
+    x2 = xpeak2[xpeak2<upper_bound2]
+    x2 = x2.ravel()
+
+    y2 = data_entries[bincenters>lower_bound2]
+    y2 = y2[xpeak2<upper_bound2]
+    y2 = y2.ravel()
+
+    plotx1, axx1 = plt.subplots()
+    axx1.plot(x1,y1)
+    axx1.set_xlabel('ADC Channel')
+    axx1.set_ylabel('Counts')
+    plt.show()
+
+    plotx2, axx2 = plt.subplots()
+    axx2.plot(x2,y2)
+    plt.show()
+
+    # Set parameter guesses
+    p01 = ([500, 800, 200])
+    p02 = ([500, 1500, 100])
+
+    # Fits the data to 2 Gaussians and plots
+    E_param1, E_cov1 = curve_fit(GaussFit, xdata = x1, ydata = y1, p0 = p01, maxfev = 10000)
+    E_param2, E_cov2 = curve_fit(GaussFit, xdata = x2, ydata = y2, p0 = p02, maxfev = 10000)
+    E_err1 = np.sqrt(np.diag(E_cov1))
+    E_err2 = np.sqrt(np.diag(E_cov2))
+
+
+    xspace1 = np.linspace(lower_bound1, upper_bound1, 1000)
+    xspace2 = np.linspace(lower_bound2, upper_bound2, 1000)
+
+    # Plots the hitogram and fitted function
+    fitplt, fitax = plt.subplots()
+    fitax.hist(energy_filtA, bins=nbins, range = [0,4095], label = 'PSD Filtered Energy')
+    fitax.plot(xspace1, GaussFit(xspace1, *E_param1), linewidth = 2.5, label = r'$^{212}$Bi $\alpha$ fit')
+    fitax.plot(xspace2, GaussFit(xspace2, *E_param2), linewidth = 2.5, label = r'$^{212}$Po $\alpha$ fit')
+    plt.legend()
+
+    plt.xlim(0,2000)
+    fitax.set_xlabel('ADC Channel')
+    fitax.set_ylabel('Counts')
+    plt.show()
+
+    # Calculates the integral
+    GInt1, GIntErr1 = quad(GaussFit,lower_bound1, upper_bound1, args=(E_param1[0], E_param1[1], E_param1[2]))
+    GInt2, GIntErr2 = quad(GaussFit,lower_bound2, upper_bound2, args=(E_param2[0], E_param2[1], E_param2[2]))
+
+    # Correct integrals for bin width
+    GInt1 = GInt1/binwidth
+    GInt2 = GInt2/binwidth
+
+    # Use counting statistics for the uncertainty: ~ sqrt(num counts)
+    GIntErr1 = np.sqrt(GInt1)
+    GIntErr2 = np.sqrt(GInt2)
+
+    # Prints out the fitting parameters and integrals
+    print("The fit parameters are:")
+    print("Amplitude 1: ", E_param1[0], " +/-", E_err1[0], " Counts")
+    print("Mean 1: ", E_param1[1], " +/-", E_err1[1], " ADC Channel")
+    print("Stdev 1: ", E_param1[2], " +/-", E_err1[2], " ADC Channel")
+    print("Integral 1: ", GInt1, " +/-", GIntErr1, " Counts")
+    print("Amplitude 2: ", E_param2[0], " +/-", E_err2[0], "Counts")
+    print(" Mean 2: ", E_param2[1], " +/-", E_err2[1], "ADC Channel")
+    print(" Stdev 2: ", E_param2[2], " +/-", E_err2[2], " ADC Channel")
+    print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
+
+    print("")
+    print(r"Total $^{212}$Pb decays: ", GInt1 + GInt2, " +/- ", np.sqrt(GInt1 + GInt2), " Counts")
+
+    # Calculate the activity based on the run time
+    # Could make it automatic, use timestamp[last] - timestamp[0] but that would be slightly off
+    # Might be a good enough approx
+    Pbactivity = (GInt1 + GInt2)/60  # CPS
+    Pbactivity = Pbactivity * (1/37000) # microcurie
+    # Use relative counting uncertainty to get activity uncertainty
+    print(r"Total $^{212}$Pb activity: ", Pbactivity, " +/- ", np.sqrt(GInt1 + GInt2) * Pbactivity / (GInt1 + GInt2))
+
+
+# Runs the main file
+main()
