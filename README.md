@@ -10,3 +10,10 @@ The data files read into this code are not publicly available. Please reach out 
 ## Requirements
 
 ## Acknowledgements 
+
+Advisors:
+  Lee Sobotka [WashU]
+  Robert Charity [WashU]
+Collaborators:
+  Daniel Thorek [WashU Med]
+  Abbie Hasson [WashU Med]
