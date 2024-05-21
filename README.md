@@ -11,9 +11,9 @@ The data files read into this code are not publicly available. Please reach out 
 
 ## Acknowledgements 
 
-# Advisors:
-  Lee Sobotka [WashU]
-  Robert Charity [WashU]
-# Collaborators:
-  Daniel Thorek [WashU Med]
-  Abbie Hasson [WashU Med]
+### Advisors:
+*Lee Sobotka [WashU]
+*Robert Charity [WashU]
+### Collaborators:
+*Daniel Thorek [WashU Med]
+*Abbie Hasson [WashU Med]
