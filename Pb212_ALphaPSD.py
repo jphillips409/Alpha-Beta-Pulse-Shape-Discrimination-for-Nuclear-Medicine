@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
 import matplotlib as mpl
+from pathlib import Path
 
 # Sets the plot style
 plt.rcParams['font.size'] = 12
@@ -117,35 +118,69 @@ def GaussFit(x, a, mu, s):
 def main():
     # Read the CAEN data file in csv format
     # Different files available to process
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_07_t600s.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_08a_t600.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_09a_t1800_10nsPG.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_09a_t2700.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_10a_t7200_10nsPG.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_11a_t14400_10nsPG.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_12a_t14400_10nsPG.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_13a_t28800_10nsPG.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_14a_t28800_10nsPG.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_15a_t28800_10nsPG.csv'
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_16a_t28800_10nsPG_400nsLG.csv'
+    ###################################################
+
+    # Remember to change your file path for your computer
+
+    ###################################################
+    # Constant filepath variable to get around the problem of backslashes in windows
+    # The Path library will use forward slashes but convert them to correctly treat your OS
+    # Also makes it easier to switch to a different computer
+    filepath = Path(r"C:/Users/j.s.phillips/Documents/Thorek_Pb212/")
+
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
+    #data_file =  r'SDataR_WF_Pb212_Ar_2024_05_07_t600s.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_08a_t600.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_09a_t1800_10nsPG.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_09a_t2700.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_10a_t7200_10nsPG.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_11a_t14400_10nsPG.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_12a_t14400_10nsPG.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_13a_t28800_10nsPG.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_14a_t28800_10nsPG.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_15a_t28800_10nsPG.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_16a_t28800_10nsPG_400nsLG.csv'
 
     # Files that include a veto for cosmic ray events, now have a channel number
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\DataR_CH1@DT5730B_722_WF_Pb212_Ar_2024_05_17a_t600_10nsPG_410nsLG_NoVeto.csv'
+    #data_file = r'DataR_CH1@DT5730B_722_WF_Pb212_Ar_2024_05_17a_t600_10nsPG_410nsLG_NoVeto.csv'
 
     # Files that contain two channels (0, 1) but are a single file
     # These are set up so that:
     #   cosmic veto paddle: chan 0
     #   LSC:                chan 1
-    #data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_20a_t3600_10nsPG_410nsLG_SingleFile.csv'
-    data_file = r'C:\Users\j.s.phillips\Documents\Thorek_Pb212\SDataR_WF_Pb212_Ar_2024_05_20a_t7200_10nsPG_410nsLG_100lsbCR_SingleFile.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_20a_t3600_10nsPG_410nsLG_SingleFile.csv'
+    data_file = r'SDataR_WF_Pb212_Ar_2024_05_20a_t7200_10nsPG_410nsLG_100lsbCR_SingleFile.csv'
+
+
+    # Now joins the path and file
+    file_to_open = filepath / data_file
+
+    # Reads the data file string and extracts run time
+    # Looks for the undercase t and underscores - this must always be in the filename or this won't work
+    # Reads in the string values, adds as strings, then converts to int
+    data_string = list(data_file)
+    runt_str = []
+    runtime = ''
+    for i in range(len(data_string)):
+        if i != 0 and data_string[i] == 't' and data_string[i-1] == '_':
+            for j in range(1,100):
+                if data_string[i+j] == '_': break
+                else: runt_str.append(data_string[i+j])
+        else: continue
+
+    for i in range(len(runt_str)):
+        runtime += runt_str[i]
+    runtime = int(runtime)
 
     # Unpacks the data, choose alldat to True if you want to read all the file
     # Set wavesdat to True if you want the waveforms
     # Truncated version is set to 10000 events
     alldat = True
-    wavesdat = True
-    data = Unpack(data_file, alldat, wavesdat)
+    wavesdat = False
+    data = Unpack(file_to_open, alldat, wavesdat)
+
+    # Array to check event type
+    chantype = []
 
     # The arrays used to store all the event information
     energy = []
@@ -165,30 +200,62 @@ def main():
     t_cuthigh = 5000 # actual time cut in picoseconds
     t_cutlow = 2000
 
-    # Arrays for time filtered events
-    energy_tfilt = []
-    psd_parameter_tfilt = []
+    # Arrays for cosmic ray events
+    # Only care about events in detector 1 - the LSC
+    energy_cosmic = []
+    psd_parameter_cosmic = []
+    index_cosmic = []
 
+    # Arrays that have had cosmic rays removed
+    # Only care about channel 1
+    energy_nocosmic = []
+    channel_nocosmic = []
+    time_nocosmic = []
+    energy_short_nocosmic = []
+    psd_parameter_nocosmic = []
+    traces_nocosmic = []
 
-    # Store the channel number, timestamp, and energy
+    # Grab the channel number so you can determine the experimental setup
+    # If only channel 0, earlier run, no cosmic paddle
+    # If it contains channel 1, has cosmic paddle
     for i in range(len(data)):
-        # only interested in events with energyshort and energy > 0
-        # skip if not > 0
-        if data[i][3] > 0 and data[i][4] > 0:
-            psd = (data[i][3]-data[i][4])/data[i][3]
-            if (psd < 0 or psd > 1) and data[i][1] == 1: continue # ignores events with bad psd
-            #if data[i][1] == 0: continue
-            channel.append(data[i][1])
-            time.append(data[i][2])
-            energy.append(data[i][3])
-            energy_short.append(data[i][4])
-            psd_parameter.append(psd)  # = (energy-energy_short)/energy
-            if wavesdat is True: traces.append(data[i][6:])
+        chantype.append(data[i][1])
+
+    if 1 in chantype:
+        print('Data contains paddle to detect cosmic rays: chan 0, LSC is chan 1')
+    else:
+        print('Data does not contain paddle to detect cosmic rays, LSC is chan 0')
+    print('Runtime: ', runtime, 's')
+
+    # Now fill in the data
+    # Check event type before the loop, don't want to loop the event type check again and again
+    if 1 in chantype:
+        for i in range(len(data)):
+            if data[i][3] > 0 and data[i][4] > 0:
+                psd = (data[i][3]-data[i][4])/data[i][3]
+                if (psd < 0 and data[i][1] == 1) or (psd > 1 and data[i][1] == 1): continue # ignores events with bad psd
+                channel.append(data[i][1])
+                time.append(data[i][2])
+                energy.append(data[i][3])
+                energy_short.append(data[i][4])
+                psd_parameter.append(psd)  # = (energy-energy_short)/energy
+                if wavesdat is True: traces.append(data[i][6:])
+    else:
+        for i in range(len(data)):
+            if data[i][3] > 0 and data[i][4] > 0:
+                psd = (data[i][3]-data[i][4])/data[i][3]
+                if psd < 0 or psd > 1: continue # ignores events with bad psd
+                channel.append(data[i][1])
+                time.append(data[i][2])
+                energy.append(data[i][3])
+                energy_short.append(data[i][4])
+                psd_parameter.append(psd)  # = (energy-energy_short)/energy
+                if wavesdat is True: traces.append(data[i][6:])
 
     # Convert the data into numpy arrays
     energy = np.array(energy)
     energy_short = np.array(energy_short)
-    #psd_parameter = np.array(psd_parameter)
+    psd_parameter = np.array(psd_parameter)
     time = np.array(time)
     channel = np.array(channel)
     traces = np.array(traces)
@@ -224,7 +291,7 @@ def main():
     index_pairs = np.array(index_pairs)
     dT = np.array(dT)
 
-    print('The number of time pairs is: ', len(time_pairs))
+    print(r'The number of time pairs in 1 $\mu$s is: ', len(time_pairs))
 
     # If pairs are found, plot the delta-T distribution and make a time cut
     if len(channel_pairs) > 0:
@@ -244,9 +311,32 @@ def main():
         # Want the value from channel 1
         for i in range(len(time_pairs)):
             if dT[i] >= t_cutlow and dT[i] <= t_cuthigh:
-                energy_tfilt.append(energy[index_pairs[i][1]])
-                psd_parameter_tfilt.append(psd_parameter[index_pairs[i][1]])
+                index_cosmic.append(index_pairs[i][1])
+                energy_cosmic.append(energy[index_pairs[i][1]])
+                psd_parameter_cosmic.append(psd_parameter[index_pairs[i][1]])
 
+    # Now go through the original lists and remove cosmic ray events and only use channel 1
+    # Like the original data unpacking, don't want to loop over the event type check
+    if 1 in channel:
+        for i in range(len(channel)):
+        # Need to be careful again here, earlier files only have channel 0 - LSC
+            if i not in index_cosmic and channel[i] == 1:
+                energy_nocosmic.append(energy[i])
+                channel_nocosmic.append(channel[i])
+                time_nocosmic.append(time[i])
+                energy_short_nocosmic.append(energy_short[i])
+                psd_parameter_nocosmic.append(psd_parameter[i])
+                if wavesdat is True: traces_nocosmic.append(traces[i])
+    else:
+        for i in range(len(channel)):
+            energy_nocosmic.append(energy[i])
+            channel_nocosmic.append(channel[i])
+            time_nocosmic.append(time[i])
+            energy_short_nocosmic.append(energy_short[i])
+            psd_parameter_nocosmic.append(psd_parameter[i])
+            if wavesdat is True: traces_nocosmic.append(traces[i])
+
+    print('The number of cosmic ray events is: ', len(energy_cosmic))
 
     # Plot traces.
     # Set up plot window.
@@ -281,58 +371,72 @@ def main():
     # Plots the raw spectrum
     fig_rawE, ax_rawE = plt.subplots()
     ax_rawE.hist(energy, bins=nbins, range = [0,4095])
+    ax_rawE.set_title('Raw ADC Channel')
     ax_rawE.set_xlabel('ADC Channel')
     ax_rawE.set_ylabel('Counts')
     plt.show()
 
-    # Plots the PSD parameter
+    # Plots the raw PSD parameter
     fig_PSD, ax_PSD = plt.subplots()
     ax_PSD.hist(psd_parameter,bins=4000, range = [0,1])
+    ax_PSD.set_title('Raw PSD Parameter')
     ax_PSD.set_xlabel('PSD Parameter')
     ax_PSD.set_ylabel('Counts')
     plt.xlim([0.,1.])
     plt.show()
 
-    # Plots the PSD parameter vs the energy
+    # Plots the raw PSD parameter vs the energy
     fig_psdE, ax_psdE = plt.subplots()
     h = ax_psdE.hist2d(energy, psd_parameter, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
     fig_psdE.colorbar(h[3],ax=ax_psdE)
     plt.ylim([0., 1.])
-    ax_psdE.set_ylabel('PSD parameter')
+    ax_psdE.set_title('Raw Energy vs PSD Parameter')
+    ax_psdE.set_ylabel('PSD Parameter')
     ax_psdE.set_xlabel('ADC Channel')
     plt.show()
 
-    # Plots the PSD parameter vs the energy for time filtered events - should be cosmic arrays
-    if len(energy_tfilt) > 0:
-        fig_psdE_tfilt, ax_psdE_tfilt = plt.subplots()
-        h = ax_psdE_tfilt.hist2d(energy_tfilt, psd_parameter_tfilt, bins=[100,100], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
-        fig_psdE_tfilt.colorbar(h[3],ax=ax_psdE)
+    # Plots the PSD parameter vs the energy for cosmic ray events - only channel 1
+    if len(energy_cosmic) > 0:
+        fig_psdE_cosmic, ax_psdE_cosmic = plt.subplots()
+        h = ax_psdE_cosmic.hist2d(energy_cosmic, psd_parameter_cosmic, bins=[100,100], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+        fig_psdE_cosmic.colorbar(h[3],ax=ax_psdE_cosmic)
         plt.ylim([0., 1.])
-        ax_psdE_tfilt.set_ylabel('PSD parameter')
-        ax_psdE_tfilt.set_xlabel('ADC Channel')
+        ax_psdE_cosmic.set_title('Energy vs PSD Parameter for Cosmic Rays')
+        ax_psdE_cosmic.set_ylabel('PSD parameter')
+        ax_psdE_cosmic.set_xlabel('ADC Channel')
         plt.show()
+
+    # Plots the PSD parameter vs the energy after removing cosmic rays - only channel 1
+    fig_psdE_nocosmic, ax_psdE_nocosmic = plt.subplots()
+    h = ax_psdE_nocosmic.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    fig_psdE_nocosmic.colorbar(h[3],ax=ax_psdE_nocosmic)
+    plt.ylim([0., 1.])
+    ax_psdE_nocosmic.set_title('Energy vs PSD Parameter without Cosmic Rays')
+    ax_psdE_nocosmic.set_ylabel('PSD parameter')
+    ax_psdE_nocosmic.set_xlabel('ADC Channel')
+    plt.show()
 
     # Sets your A PSD gate - straight lines
     # Also returns an array containing the indices for the traces
     PSDlowA = 0.13
     PSDhighA = 0.25
-    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy, psd_parameter)
-    print("Events that have a non-zero energyshort and energylong: ", len(energy))
+    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
+    print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
     print("Events inside the PSD cut A: ", len(energy_filtA))
 
     # Sets your B PSD gate - negatively sloped to get the mixed beta/alpha
     # Also cut to not overlap with gate A
     # The line equation is stored in the corresponding function
     # Also returns an array containing the indices for the traces
-    energy_filtB, tracesind_filtB = PSDcutB(energy, psd_parameter, PSDhighA)
+    energy_filtB, tracesind_filtB = PSDcutB(energy_nocosmic, psd_parameter_nocosmic, PSDhighA)
     print("Events inside the PSD cut B: ", len(energy_filtB))
 
     # Sets an energy gate for mixed beta/alpha that don't fall into the short gate
     # E cut set to 1200, psd cut set to PSDlowA
     # Also returns an array containing the indices for the traces
-    energy_filtC, tracesind_filtC = Ecut(energy, psd_parameter, 0, 0, 0.25)
+    energy_filtC, tracesind_filtC = Ecut(energy_nocosmic, psd_parameter_nocosmic, 0, 0, 0.25)
     print("Events inside the energy cut (C): ", len(energy_filtC))
-    print("Rate of events inside cut C (/s): ", len(energy_filtC) / (7200))  # Use the run time
+    print("Rate of events inside cut C (/s): ", len(energy_filtC) / (runtime))  # Use the run time
     print("")
 
     # Plots traces for each cut
@@ -340,7 +444,7 @@ def main():
         ftr_A, axtr_A = plt.subplots()
         # Looks for traces that fall within the gate and plot them
         for i in range(20):
-            axtr_A.plot(wavetime, traces[tracesind_filtA[i]], label=' trace')
+            axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace')
         axtr_A.set_title('Traces in Cut A')
         axtr_A.set_ylabel('Voltage')
         yStart = 9000
@@ -353,7 +457,7 @@ def main():
         ftr_B, axtr_B = plt.subplots()
         # Looks for traces that fall within the gate and plot them
         for i in range(10):
-            if i < len(energy_filtB): axtr_B.plot(wavetime, traces[tracesind_filtB[i]], label=' trace')
+            if i < len(energy_filtB): axtr_B.plot(wavetime, traces_nocosmic[tracesind_filtB[i]], label=' trace')
         axtr_B.set_title('Traces in cut B')
         axtr_B.set_ylabel('Voltage')
         axtr_B.set_xlabel('Time (ns)')
@@ -364,7 +468,7 @@ def main():
         ftr_C, axtr_C = plt.subplots()
         # Looks for traces that fall within the gate and plot them
         for i in range(10):
-            axtr_C.plot(wavetime, traces[tracesind_filtC[i]], label=' trace')
+            axtr_C.plot(wavetime, traces_nocosmic[tracesind_filtC[i]], label=' trace')
         axtr_C.set_title('Traces in Cut C')
         axtr_C.set_ylabel('Voltage')
         axtr_C.set_xlabel('Time (ns)')
@@ -402,7 +506,7 @@ def main():
     ElineC = np.full(len(yline), 1000)
 
     fig_psdE2, ax_psdE2 = plt.subplots()
-    h2 = ax_psdE2.hist2d(energy, psd_parameter, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
     fig_psdE2.colorbar(h2[3],ax=ax_psdE2)
     ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
@@ -448,11 +552,11 @@ def main():
     plt.show()
 
     # Prints out the backgrounds
-    print("Total background: ", len(energy)/3600, " CPS")
-    print("Total beta background: ", len(energy_filtC)/3600, " CPS")
+    print("Total background: ", len(energy_nocosmic)/runtime, " CPS")
+    print("Total beta background: ", len(energy_filtC)/runtime, " CPS")
     EC_bool = np.asarray(energy_filtC)
-    print("Beta background above 100 ADC Chans: ", (EC_bool > 100).sum()/3600, " CPS")
-    print("Beta background above 200 ADC Chans: ", (EC_bool > 200).sum()/3600, " CPS")
+    print("Beta background above 100 ADC Chans: ", (EC_bool > 100).sum()/runtime, " CPS")
+    print("Beta background above 200 ADC Chans: ", (EC_bool > 200).sum()/runtime, " CPS")
 
     # Get bin centers
     bincenters = np.array([0.5 * (bins[i] + bins[i + 1])  for i in range(len(bins) - 1)])
