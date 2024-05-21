@@ -1,2 +1,2 @@
-# Pb-212-Pulse-Shape-Discrimination
-Detector unpacking and analysis code for the detection of decays from Pb-212 and its daughter nuclei in a liquid scintillation counter.
+# Alpha-Beta-Pulse-Shape-Discrimination-for-Nuclear-Medicine
+Detector unpacking and analysis code for the detection of decays from candadites for alpha therapy using pulse-shape discrimination.
