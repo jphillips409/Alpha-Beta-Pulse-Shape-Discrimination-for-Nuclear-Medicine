@@ -6,3 +6,7 @@ Detector unpacking and analysis code for the detection of decays from candadites
 
 ## Data
 The data files read into this code are not publicly available. Please reach out to me via email if you would like to procure them.
+
+##Requirements
+
+##Acknowledgements 
