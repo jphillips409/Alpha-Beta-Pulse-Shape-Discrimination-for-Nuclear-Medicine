@@ -12,7 +12,8 @@ The python packages used in this file are as follows:
 * numpy
 * matplotlib
 * scipy
-* pathlib //
+* pathlib
+  
 This repository only contains the python file. All packages and python environments must be handled by the user.
 
 ## Acknowledgements 
