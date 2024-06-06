@@ -8,6 +8,12 @@ Detector unpacking and analysis code for the detection of decays from candadites
 The data files read into this code are not publicly available. Please reach out to me via email if you would like to procure them.
 
 ## Requirements
+The python packages used in this file are as follows:
+* numpy
+* matplotlib
+* scipy
+* pathlib
+This repository only contains the python file. All packages and python environments must be handled by the user.
 
 ## Acknowledgements 
 
