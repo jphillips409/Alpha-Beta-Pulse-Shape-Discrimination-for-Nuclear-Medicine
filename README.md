@@ -4,6 +4,9 @@
 ## Purpose
 Detector unpacking and analysis code for the detection of decays from candidites for alpha therapy using pulse-shape discrimination.
 
+## Experimental Setup
+The data was acquired using a liquid scintillation detector with the Ultima Gold scintillant. The raw waveforms were analyzed by a CAEN 5370B digitizer.
+
 ## Data
 The data files read into this code are not publicly available. Please reach out to me via email if you would like to procure them.
 
