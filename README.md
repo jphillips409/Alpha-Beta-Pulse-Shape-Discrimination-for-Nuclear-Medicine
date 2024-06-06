@@ -37,7 +37,7 @@ This program uses the numpy genfromtxt() command to unpack the data files. The d
 * The pulse-shape discrimination (PSD) parameter calculated from the long and short energies.
 * The waveform samples.
 
-* The run time is pulled directly from the filename. But in its current form, the runtime must be written in the filename as _t#_ or _t#. where # is the runtime in seconds. 
+* The run time is pulled directly from the filename. But in its current form, the runtime must be written in the filename as t#, where # is the runtime in seconds. t# must also have an underscore in front of the t and an underscore or a period after the runtime value.
 
 Especially for large files, processing the waveforms drastically increases the run time. Two switches are provided:
 * alldat: Set to True to process all events. False for a certain number (default is 10000).
