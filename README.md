@@ -28,7 +28,7 @@ This repository only contains the python file. All packages and python environme
 ## User Guide
 
 ### Data Format:
-This program uses the numpy genfromtxt() command to unpack the data files. The data is in the form of digitized waveforms, with 248 samples across 496 ns. Each event contains in order:
+This program uses the numpy genfromtxt() command to unpack the data files. The data files are csv format with semi colon delimiters. The data is in the form of digitized waveforms, with 248 samples across 496 ns. Each event contains in order:
 * The board number (never changes).
 * The channel number (0 for a cosmic ray veto detector, 1 for the LSC).
 * The event timestamp (in ps).
@@ -36,6 +36,8 @@ This program uses the numpy genfromtxt() command to unpack the data files. The d
 * The integrated energy from the short gate.
 * The pulse-shape discrimination (PSD) parameter calculated from the long and short energies.
 * The waveform samples.
+
+* The run time is pulled directly from the filename. But in its current form, the runtime must be written in the filename as _t#_ or _t#. where # is the runtime in seconds. 
 
 Especially for large files, processing the waveforms drastically increases the run time. Two switches are provided:
 * alldat: Set to True to process all events. False for a certain number (default is 10000).
