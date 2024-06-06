@@ -7,6 +7,12 @@
 #          PSD is performed by the digitizer and is read out as a psd_parameter.
 
 # Detector: Liquid scintillation using the CAEN 5730B digitizer
+
+# Liquid Scintillants:
+#   Regular Ultima Gold
+#   Ultima Gold AB: Meant for alpha-beta discrimination
+#   Ultima Gold F: Meant for organic samples and provides high resolution.
+#                  Must be mixed with AB to run the Pb-212 samples.
 ########################################################
 
 # Import necessary modules
@@ -76,15 +82,24 @@ def PSDcutA(low, high, Earr, PSDarr):
 
 # For cut B - negatively sloped line
 # return trace array indices so that you can look at those waveforms
-def PSDcutB(Earr, PSDarr, psdval):
+def PSDcutB(Earr, PSDarr, psdval, UG):
     Filtarr = []
     trarr = []
 
     # iterates over the PSD array and filters for sloped gate
     for i in range(len(PSDarr)):
-        if PSDarr[i] >= -0.00021973 * Earr[i] + 1 and PSDarr[i] >= psdval:
+        # For regular Ultima Gold
+        if PSDarr[i] >= -0.00021973 * Earr[i] + 1 and PSDarr[i] >= psdval and (UG == 'R' or UG == 'AB'):
             Filtarr.append(Earr[i])
             trarr.append(i)
+        # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
+        if PSDarr[i] >= -0.0002195685673 * Earr[i] + 1.32935 and PSDarr[i] >= psdval and PSDarr[i] <= 1 and UG == 'F':
+            Filtarr.append(Earr[i])
+            trarr.append(i)
+        # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
+        #if PSDarr[i] >= -0.0006 * Earr[i] + 1 and PSDarr[i] >= psdval - 0.02:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
 
     return Filtarr, trarr
 
@@ -121,6 +136,12 @@ def main():
     ###################################################
 
     # Remember to change your file path for your computer
+    # Currently you must manually switch different PSD cut and peak fit settings for
+    #   the different types of Ultima Gold scintillant.
+    # Types of UG implemented:
+    #       Regular UG, not mentioned in file name
+    #       AB UG, denoted by "UGab" in filename
+    #       AB + F UG, denoted by "UGf" in filename
 
     ###################################################
     # Constant filepath variable to get around the problem of backslashes in windows
@@ -152,8 +173,24 @@ def main():
     #data_file = r'SDataR_WF_Pb212_Ar_2024_05_20a_t7200_10nsPG_410nsLG_100lsbCR_SingleFile.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_05_21a_t14400_50lsbCR_SingleFile.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_05_21a_t11520_100lsbCR_SingleFile.csv'
-    data_file = r'DataR_WF_Pb212_Ar_2024_05_22a_t10800_100lsbCR_SingleFile.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_05_22a_t10800_100lsbCR_SingleFile.csv'
 
+    # Using the AB and F Ultima Gold
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t600_UGab.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGab.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t300_UGf_410LG_400TH_10CG.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_1000TH_10CG.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_400TH_10CG.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_448TH_10CG.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGab.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGf.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGf_RejectSat.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t1200_UGab.csv'
+    data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t1200_UGf.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t2400_UGab.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t3600_UGab.csv'
+    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t3600_UGf.csv'
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -182,6 +219,12 @@ def main():
     wavesdat = False
     data = Unpack(file_to_open, alldat, wavesdat)
 
+    # Choose what type of Ultima Gold you are using
+    #   R = Regular, AB, F = AB+F
+    #UG = 'R'
+    #UG = 'AB'
+    UG = 'F'
+
     # Array to check event type
     chantype = []
 
@@ -192,6 +235,8 @@ def main():
     channel = []
     psd_parameter = []
     traces = []
+
+    satevents = 0 #  Counts the number of saturated events
 
     # The arrays used to store pairs of events across channels
     # Allows you to make a delta-T distribution and cut out cosmic rays
@@ -240,6 +285,7 @@ def main():
                 channel.append(data[i][1])
                 time.append(data[i][2])
                 energy.append(data[i][3])
+                if data[i][3] == 4095 and data[i][1] == 1: satevents +=1
                 energy_short.append(data[i][4])
                 psd_parameter.append(psd)  # = (energy-energy_short)/energy
                 if wavesdat is True: traces.append(data[i][6:])
@@ -251,6 +297,7 @@ def main():
                 channel.append(data[i][1])
                 time.append(data[i][2])
                 energy.append(data[i][3])
+                if data[i][3] == 4095 and data[i][1] == 1: satevents +=1
                 energy_short.append(data[i][4])
                 psd_parameter.append(psd)  # = (energy-energy_short)/energy
                 if wavesdat is True: traces.append(data[i][6:])
@@ -264,12 +311,16 @@ def main():
     traces = np.array(traces)
     psd_err = 0
 
+    # Gets the difference between the first and last timestamp
+    print("1st and last dT is: ", time[len(time) - 1] - time[0], "ps")
+
     #Checks how many events have an unrealistic PSD parameter
     for i in range(len(psd_parameter)):
         if psd_parameter[i] < 0 or psd_parameter[i] > 1:
             #print(energy[i], "  ", psd_parameter[i])
             psd_err = psd_err + 1
     print("PSD too low or too high: ", psd_err)
+    print("Saturated Events: ", satevents)
 
     # Finds the paired events within a microsecond window
     # Only used if the file contains two channels
@@ -444,10 +495,23 @@ def main():
     ax_psdE_nocosmic.set_xlabel('ADC Channel')
     plt.show()
 
+    ############################################################################################################
+    # Makes PSD cuts
+
     # Sets your A PSD gate - straight lines
     # Also returns an array containing the indices for the traces
+    # Using regular Ultima Gold
     PSDlowA = 0.13
     PSDhighA = 0.25
+
+    # Using AB Ultima Gold
+    if UG == 'AB': PSDlowA = 0.27
+    if UG == 'AB': PSDhighA = 0.45
+
+    # Using Ultima Gold AB + F
+    if UG == 'F': PSDlowA = 0.25
+    if UG == 'F': PSDhighA = 0.43
+
     energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
     print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
     print("Events inside the PSD cut A: ", len(energy_filtA))
@@ -459,14 +523,14 @@ def main():
     axBi.hist(BiAlphaCPS, bins=nbins, range=[0, 4095])
     plt.xlim(0,2000)
     plt.show()
-    print("Cunts in Bi alpha PSD/energy region: ", len(BiAlphaCPS))
+    print("Counts in Bi alpha PSD/energy region: ", len(BiAlphaCPS))
     print("CPS in Bi alpha PSD/energy region: ", len(BiAlphaCPS)/runtime)
 
     # Sets your B PSD gate - negatively sloped to get the mixed beta/alpha
     # Also cut to not overlap with gate A
     # The line equation is stored in the corresponding function
     # Also returns an array containing the indices for the traces
-    energy_filtB, tracesind_filtB = PSDcutB(energy_nocosmic, psd_parameter_nocosmic, PSDhighA)
+    energy_filtB, tracesind_filtB = PSDcutB(energy_nocosmic, psd_parameter_nocosmic, PSDhighA, UG)
     print("Events inside the PSD cut B: ", len(energy_filtB))
     energy_filtB = np.array(energy_filtB)
 
@@ -474,7 +538,14 @@ def main():
     # Sets an energy gate for mixed beta/alpha that don't fall into the short gate
     # E cut set to 1200, psd cut set to PSDlowA
     # Also returns an array containing the indices for the traces
-    energy_filtC, tracesind_filtC = Ecut(energy_nocosmic, psd_parameter_nocosmic, 0, 0, 0.25)
+    # Using regular Ultima Gold
+    PSDlowC = 0.0
+
+    #Using Ultima Gold AB+F
+    #PSDlowC = 0.1
+    PSDhighC = PSDlowA
+
+    energy_filtC, tracesind_filtC = Ecut(energy_nocosmic, psd_parameter_nocosmic, 0, PSDlowC, PSDhighC)
     print("Events inside the energy cut (C): ", len(energy_filtC))
     print("Rate of events inside cut C (/s): ", len(energy_filtC) / (runtime))  # Use the run time
     print("")
@@ -485,7 +556,7 @@ def main():
     if wavesdat is True:
         ftr_A, axtr_A = plt.subplots()
         # Looks for traces that fall within the gate and plot them
-        for i in range(20):
+        for i in range(500):
             axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace')
         axtr_A.set_title('Traces in Cut A')
         axtr_A.set_ylabel('Voltage')
@@ -509,7 +580,7 @@ def main():
 
         ftr_C, axtr_C = plt.subplots()
         # Looks for traces that fall within the gate and plot them
-        for i in range(10):
+        for i in range(500):
             axtr_C.plot(wavetime, traces_nocosmic[tracesind_filtC[i]], label=' trace')
         axtr_C.set_title('Traces in Cut C')
         axtr_C.set_ylabel('Voltage')
@@ -541,10 +612,23 @@ def main():
     PSDhighlineA = np.full(len(xline), PSDhighA)
 
     #Draws the B cut
+    # For regular Ultima Gold
     xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
     PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
     xlineB = np.append(xlineB, 4096)
     PSDlineB = np.append(PSDlineB, PSDhighA)
+
+    # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
+    if UG == 'F':
+        xlineB = np.linspace(1500, 4096,10)
+        PSDlineB = np.full(len(xlineB), -0.0002195685673 * xlineB + 1.32935)
+
+    # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
+    #xlineB = np.linspace(0, (PSDhighA - 0.02 - 1) / (-0.0006),9)
+    #PSDlineB = np.full(len(xlineB), -0.0006 * xlineB + 1)
+    #xlineB = np.append(xlineB, 4096)
+    #PSDlineB = np.append(PSDlineB, PSDhighA - 0.02)
+
     ElineC = np.full(len(yline), 1000)
 
     fig_psdE2, ax_psdE2 = plt.subplots()
@@ -554,11 +638,26 @@ def main():
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
     #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
-    plt.ylim([0., 1.])
+    plt.ylim([0, 1])
+    plt.xlim([0,4095])
 
     ax_psdE2.set_ylabel('PSD parameter')
     ax_psdE2.set_xlabel('ADC Channel')
     plt.show()
+
+    # Focus on the B cut region
+    psd_parameter_B = []
+    for i in range(len(tracesind_filtB)):
+        psd_parameter_B.append(psd_parameter_nocosmic[tracesind_filtB[i]])
+    fig_psdEB, ax_psdEB = plt.subplots()
+    h2 = ax_psdEB.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    fig_psdEB.colorbar(h2[3],ax=ax_psdEB)
+    plt.ylim([0.4, 1.2])
+    plt.xlim([2000,5200])
+    ax_psdEB.set_ylabel('PSD parameter')
+    ax_psdEB.set_xlabel('ADC Channel')
+    plt.show()
+
 
     # Plots the filtered energy data for cut A
     fig_filtEA, ax_filtEA = plt.subplots()
@@ -604,6 +703,9 @@ def main():
     print("Beta background above 200 ADC Chans: ", (EC_bool > 200).sum()/runtime, " CPS")
     print("")
 
+    ############################################################################################################
+    # Fitting the alpha peaks
+
     # Get bin centers
     bincenters = np.array([0.5 * (bins[i] + bins[i + 1])  for i in range(len(bins) - 1)])
 
@@ -611,11 +713,35 @@ def main():
     binwidth = bins[1] - bins[0]
 
     # Define range for each peak
+    # For regular Ultima Gold
     lower_bound1 = 500
     upper_bound1 = 1050
 
     lower_bound2 = 1200
     upper_bound2 = 1800
+
+    # For Ultima Gold AB
+    if UG == 'AB':
+        lower_bound1 = 700
+        upper_bound1 = 1400
+
+        lower_bound2 = 1400
+        upper_bound2 = 2200
+
+    # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
+    if UG == 'F':
+        lower_bound1 = 1000
+        upper_bound1 = 1700
+
+        lower_bound2 = 2000
+        upper_bound2 = 2900
+
+    # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
+    #lower_bound1 = 200
+    #upper_bound1 = 450
+
+    #lower_bound2 = 450
+    #upper_bound2 = 750
 
     # Get points for each bin center
     xpeak1 = bincenters[bincenters>lower_bound1]
@@ -645,8 +771,23 @@ def main():
     plt.show()
 
     # Set parameter guesses
-    p01 = ([500, 800, 200])
-    p02 = ([500, 1500, 100])
+    # For regular Ultima Gold
+    p01 = ([2000, 800, 200])
+    p02 = ([2000, 1500, 100])
+
+    # For Ultima Gold AB
+    if UG == 'AB':
+        p01 = ([2000, 900, 200])
+        p02 = ([2000, 1700, 100])
+
+    # For Ultima Gold AB + F with a coarse gain of 2.5 fC/(lsb x Vpp)
+    if UG == 'F':
+        p01 = ([2000, 1300, 200])
+        p02 = ([2000, 2400, 200])
+
+    # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
+    #p01 = ([2000, 325, 200])
+    #p02 = ([2000, 600, 100])
 
     # Fits the data to 2 Gaussians and plots
     E_param1, E_cov1 = curve_fit(GaussFit, xdata = x1, ydata = y1, p0 = p01, maxfev = 10000)
@@ -665,7 +806,7 @@ def main():
     fitax.plot(xspace2, GaussFit(xspace2, *E_param2), linewidth = 2.5, label = r'$^{212}$Po $\alpha$ fit')
     plt.legend()
 
-    plt.xlim(0,2000)
+    plt.xlim(0,3000)
     fitax.set_xlabel('ADC Channel')
     fitax.set_ylabel('Counts')
     plt.show()
@@ -694,15 +835,18 @@ def main():
     print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
 
     print("")
-    print(r"Total $^{212}$Pb decays: ", GInt1 + GInt2, " +/- ", np.sqrt(GInt1 + GInt2), " Counts")
+    print(r"Total $^{212}$Pb decays: ", GInt1 + GInt2 + len(energy_filtB), " +/- ", np.sqrt(GInt1 + GInt2 + len(energy_filtB)), " Counts")
 
     # Calculate the activity based on the run time
     # Could make it automatic, use timestamp[last] - timestamp[0] but that would be slightly off
     # Might be a good enough approx
-    Pbactivity = (GInt1 + GInt2)/runtime  # CPS
+    Pbactivity = (GInt1 + GInt2 + len(energy_filtB))/runtime  # CPS
     Pbactivity = Pbactivity * (1/37000) # microcurie
     # Use relative counting uncertainty to get activity uncertainty
     print(r"Total $^{212}$Pb activity: ", Pbactivity, " +/- ", np.sqrt(GInt1 + GInt2) * Pbactivity / (GInt1 + GInt2))
+
+    # Calculates and prints the 212Po branching ratio
+    print(r"The Pb-212 branching ratio is: ", (GInt2 + len(energy_filtB))/(GInt1 + GInt2 + len(energy_filtB)))
 
 # Runs the main file
 main()
