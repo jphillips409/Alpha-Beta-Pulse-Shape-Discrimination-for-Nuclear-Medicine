@@ -49,7 +49,7 @@ Especially for large files, processing the waveforms drastically increases the r
 I would not advise turning both "alldat" and "wavesdat" to "True" as the unpacker will take a very long time.
 
 ### Event Types:
-There are three major categories for events, depending on the scintillant used. There are then three options for running the code by changing the variable "UG" to one of three values:
+There are three major categories for events. There are then three options for running the code by changing the variable "UG" to one of three values:
 * UG = 'R' : Event uses the regular Ultima Gold. Any filename that does not contain UG' ' uses the regular Ultima Gold.
 * UG = 'AB' : Event uses the AB Ultima Gold.
 * UG = 'F' : Event uses the F Ultima Gold. This is really a mixture of the F and AB variants as F alone is not for aqueous samples.
