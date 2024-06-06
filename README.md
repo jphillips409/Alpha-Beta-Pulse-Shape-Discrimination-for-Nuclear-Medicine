@@ -37,7 +37,7 @@ This program uses the numpy genfromtxt() command to unpack the data files. The d
 * The pulse-shape discrimination (PSD) parameter calculated from the long and short energies.
 * The waveform samples.
 
-* The run time is pulled directly from the filename. But in its current form, the runtime must be written in the filename as t#, where # is the runtime in seconds. t# must also have an underscore in front of the t and an underscore or a period after the runtime value.
+The runtime for the file is pulled directly from the filename. But in its current form, the runtime must be written in the filename as t#, where # is the runtime in seconds. t# must also have an underscore in front of the t and an underscore or a period after the runtime value.
 
 Especially for large files, processing the waveforms drastically increases the run time. Two switches are provided:
 * alldat: Set to True to process all events. False for a certain number (default is 10000).
@@ -50,3 +50,7 @@ There are three major categories for events, depending on the scintillant used. 
 * UG = 'R' : Event uses the regular Ultima Gold. Any filename that does not contain UG' ' uses the regular Ultima Gold.
 * UG = 'AB' : Event uses the AB Ultima Gold.
 * UG = 'F' : Event uses the F Ultima Gold. This is really a mixture of the F and AB variants as F alone is not for aqueous samples.
+
+Failure to change the value of 'UG' will result in incorrect PSD cuts and fitting regions.
+
+There are also minor differences between events. Some events have different long and short gates, trigger holdoff times, energy gain, or other settings. I will provide the necessary information for each file.
