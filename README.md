@@ -54,3 +54,5 @@ There are three major categories for events, depending on the scintillant used. 
 Failure to change the value of 'UG' will result in incorrect PSD cuts and fitting regions.
 
 There are also minor differences between events. Some events have different long and short gates, trigger holdoff times, energy gain, or other settings. I will provide the necessary information for each file.
+
+Most events also contain a veto plastic scintillator detector for reducing the cosmic ray background. These background events will be few. The code automatically detects the presence of the veto detector, so you do not need to change anything to run files with/without it.
