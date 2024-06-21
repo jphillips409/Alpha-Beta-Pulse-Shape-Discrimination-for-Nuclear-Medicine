@@ -3,7 +3,7 @@
 # @author: Johnathan Phillips
 # @email: j.s.phillips@wustl.edu
 
-# Purpose: To unpack and analyze data for the Pb-212 decay using pulse-shape analysis.
+# Purpose: To unpack and analyze data for the Ra-223 decay using pulse-shape analysis.
 #          PSD is performed by the digitizer and is read out as a psd_parameter.
 
 # Detector: Liquid scintillation using the CAEN 5730B digitizer
@@ -12,7 +12,7 @@
 #   Regular Ultima Gold
 #   Ultima Gold AB: Meant for alpha-beta discrimination
 #   Ultima Gold F: Meant for organic samples and provides high resolution.
-#                  Must be mixed with AB to run the Pb-212 samples.
+#                  Must be mixed with AB to run the Ra-223 samples.
 ########################################################
 
 # Import necessary modules
@@ -152,70 +152,16 @@ def main():
     #       Regular UG, not mentioned in file name
     #       AB UG, denoted by "UGab" in filename
     #       AB + F UG, denoted by "UGf" in filename
+    # All or almost all Ra223 samples should be Ultima Gold AB + F
 
     ###################################################
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212")
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ra223")
 
     #data_file = r'SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
-    #data_file =  r'SDataR_WF_Pb212_Ar_2024_05_07_t600.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_08a_t600.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_09a_t1800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_09a_t2700.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_10a_t7200_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_11a_t14400_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_12a_t14400_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_13a_t28800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_14a_t28800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_15a_t28800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_16a_t28800_10nsPG_400nsLG.csv'
 
-    # Files that include a veto for cosmic ray events, now have a channel number
-    #data_file = r'DataR_CH1@DT5730B_722_WF_Pb212_Ar_2024_05_17a_t600_10nsPG_410nsLG_NoVeto.csv'
-
-    # Files that contain two channels (0, 1) but are a single file
-    # These are set up so that:
-    #   cosmic veto paddle: chan 0
-    #   LSC:                chan 1
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_20a_t3600_10nsPG_410nsLG_SingleFile.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_20a_t7200_10nsPG_410nsLG_100lsbCR_SingleFile.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_21a_t14400_50lsbCR_SingleFile.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_21a_t11520_100lsbCR_SingleFile.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_05_22a_t10800_100lsbCR_SingleFile.csv'
-
-    # Using the AB and F Ultima Gold
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t600_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t300_UGf_410LG_400TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_1000TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_400TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_448TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGf_RejectSat.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t1200_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t1200_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t2400_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t2400_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t3600_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t3600_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t3600_UGf_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t3600_UGab.csv'
-   # data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t3600_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t2700_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t2700_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_07a_t7200_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_07a_t7200_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_08a_t14400_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_08a_t14400_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_09a_t14400_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_09a_t14400_Uab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_10a_t14400_Uf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_10a_t14400_Uab.csv'
-    data_file = r'DataR_WF_Pb212_Ar_2024_06_14a_t14400_Uf.csv'
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -902,97 +848,18 @@ def main():
     print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
 
     print("")
-    print(r"Total $^{212}$Pb decays: ", GInt1 + GInt2 + len(energy_filtB), " +/- ", np.sqrt(GInt1 + GInt2 + len(energy_filtB)), " Counts")
+    print(r"Total $^{223}$Ra decays: ", GInt1 + GInt2 + len(energy_filtB), " +/- ", np.sqrt(GInt1 + GInt2 + len(energy_filtB)), " Counts")
 
     # Calculate the activity based on the run time
     # Could make it automatic, use timestamp[last] - timestamp[0] but that would be slightly off
     # Might be a good enough approx
-    Pbactivity = (GInt1 + GInt2 + len(energy_filtB))/runtime  # CPS
-    Pbactivity = Pbactivity * (1/37000) # microcurie
+    Raactivity = (GInt1 + GInt2 + len(energy_filtB))/runtime  # CPS
+    Raactivity =Raactivity * (1/37000) # microcurie
     # Use relative counting uncertainty to get activity uncertainty
-    print(r"Total $^{212}$Pb activity: ", Pbactivity, " +/- ", np.sqrt(GInt1 + GInt2) * Pbactivity / (GInt1 + GInt2))
+    print(r"Total $^{223}$Ra activity: ", Raactivity, " +/- ", np.sqrt(GInt1 + GInt2) * Raactivity / (GInt1 + GInt2))
 
-    # Calculates and prints the 212Po branching ratio
-    print(r"The Pb-212 branching ratio is: ", (GInt2 + len(energy_filtB))/(GInt1 + GInt2 + len(energy_filtB)))
-
-
-    ##############################################################################################
-    # This block of code should not be left turned on - it will take a lot of time
-    # To turn it on/off, set pg_analysis to False
-    pg_analysis = False
-    # If pg_analysis = False or wavesdat = False, this will not run, both must be set to 1 to run
-    # What this block of code does is integrate the region of each waveform before the pre-gate
-    # Then it will make a three dimensional plot of E vs PSD vs E (before pre-gate)
-    # This block of code is useful for understanding features on the E vs PSD plot
-    # To interact with the 3d plot, disable *Settings | Tools | Python Scientific | Show plots in toolwindow*
-    # When disabled, this will print all the canvases to a window.
-    # To move between plots, exit your current plot window
-    if pg_analysis == True and wavesdat == True:
-
-        # Define a new energy array for the energy before the pre-gate
-        energy_before = []
-
-        # Create a new waveform array and cut off everything after the pre-gate
-        # So the trigger is at 96 ns and the pre-gate is a 86 ns. So cut off everything after 43 samples
-        traces_before = traces_nocosmic[:, 0:43]
-        print(len(traces_before))
-        # Integrate each sliced trace region. Don't care about energy units right now
-        for i in range(len(traces_before)):
-            energy_before.append(np.sum(traces_before[i]))
-
-        energy_before = np.array(energy_before)
-
-        ftb, axtb = plt.subplots(layout='constrained')
-        axtb.set_title('Traces')
-        axtb.set_ylabel('Voltage')
-        axtb.set_xlabel('Time (ns)')
-
-        xStart = 0
-        xEnd = len(traces_before[1]) - 1
-        wavetime = np.linspace(xStart, xEnd, len(traces_before[1]))
-
-        # Convert sample number to time
-        # CAEN samples every 2 ns
-        wavetime = wavetime * 2
-
-        for i in range(1000):
-            axtb.plot(wavetime, traces_before[i], label=' trace')
-        axtb.set_xlim([xStart, xEnd * 2])
-        axtb.set_ylim([9000, 14000])
-
-        # plt.legend()
-        plt.show(block=True)  # Don't block terminal by default.
-        # quit()
-
-        # Three-dimensional plot
-        #Nx = 4095
-        #Ny = 1
-        #Nz = 1000000
-
-        fig3d = plt.figure()
-        ax3d = fig3d.add_subplot(projection = '3d')
-        ax3d.plot_trisurf(energy_nocosmic, psd_parameter_nocosmic, energy_before)
-
-        ax3d.set_xlabel('ADC Channel')
-        ax3d.set_ylabel('PSD Parameter')
-        ax3d.set_zlabel('Energy Before Pre-Gate')
-
-        plt.show()
-
-        figEE, axEE = plt.subplots()
-        axEE.scatter(energy_nocosmic, energy_before)
-        axEE.set_xlabel('ADC Channel')
-        axEE.set_ylabel('Energy Before Pre-Gate')
-
-        plt.show()
-
-        figpsdE, figpsdE = plt.subplots()
-        figpsdE.scatter(psd_parameter_nocosmic, energy_before)
-        figpsdE.set_xlabel('PSD Parameter')
-        figpsdE.set_ylabel('Energy Before Pre-Gate')
-
-        plt.show()
-
+    # Calculates and prints the 223Ra branching ratio
+    print(r"The Ra-223 branching ratio is: ", (GInt2 + len(energy_filtB))/(GInt1 + GInt2 + len(energy_filtB)))
 
 
 # Runs the main file

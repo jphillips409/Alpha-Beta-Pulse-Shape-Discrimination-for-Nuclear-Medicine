@@ -3,7 +3,7 @@
 # @author: Johnathan Phillips
 # @email: j.s.phillips@wustl.edu
 
-# Purpose: To unpack and analyze data for the Pb-212 decay using pulse-shape analysis.
+# Purpose: To unpack and analyze data for the Ac-225 decay using pulse-shape analysis.
 #          PSD is performed by the digitizer and is read out as a psd_parameter.
 
 # Detector: Liquid scintillation using the CAEN 5730B digitizer
@@ -12,7 +12,7 @@
 #   Regular Ultima Gold
 #   Ultima Gold AB: Meant for alpha-beta discrimination
 #   Ultima Gold F: Meant for organic samples and provides high resolution.
-#                  Must be mixed with AB to run the Pb-212 samples.
+#                  Must be mixed with AB to run the Ac-225 samples.
 ########################################################
 
 # Import necessary modules
@@ -152,69 +152,14 @@ def main():
     #       Regular UG, not mentioned in file name
     #       AB UG, denoted by "UGab" in filename
     #       AB + F UG, denoted by "UGf" in filename
+    # All or almost all Ac225 samples should be Ultima Gold AB + F
 
     ###################################################
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212")
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ac225")
 
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
-    #data_file =  r'SDataR_WF_Pb212_Ar_2024_05_07_t600.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_08a_t600.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_09a_t1800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_09a_t2700.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_10a_t7200_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_11a_t14400_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_12a_t14400_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_13a_t28800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_14a_t28800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_15a_t28800_10nsPG.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_16a_t28800_10nsPG_400nsLG.csv'
-
-    # Files that include a veto for cosmic ray events, now have a channel number
-    #data_file = r'DataR_CH1@DT5730B_722_WF_Pb212_Ar_2024_05_17a_t600_10nsPG_410nsLG_NoVeto.csv'
-
-    # Files that contain two channels (0, 1) but are a single file
-    # These are set up so that:
-    #   cosmic veto paddle: chan 0
-    #   LSC:                chan 1
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_20a_t3600_10nsPG_410nsLG_SingleFile.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_20a_t7200_10nsPG_410nsLG_100lsbCR_SingleFile.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_21a_t14400_50lsbCR_SingleFile.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_05_21a_t11520_100lsbCR_SingleFile.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_05_22a_t10800_100lsbCR_SingleFile.csv'
-
-    # Using the AB and F Ultima Gold
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t600_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t300_UGf_410LG_400TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_1000TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_400TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_03a_t60_UGf_410LG_448TH_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t600_UGf_RejectSat.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t1200_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_04a_t1200_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t2400_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t2400_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t3600_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_05a_t3600_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t3600_UGf_10CG.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t3600_UGab.csv'
-   # data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t3600_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t2700_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_06a_t2700_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_07a_t7200_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_07a_t7200_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_08a_t14400_UGab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_08a_t14400_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_09a_t14400_UGf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_09a_t14400_Uab.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_10a_t14400_Uf.csv'
-    #data_file = r'DataR_WF_Pb212_Ar_2024_06_10a_t14400_Uab.csv'
     data_file = r'DataR_WF_Pb212_Ar_2024_06_14a_t14400_Uf.csv'
 
     # Now joins the path and file
@@ -902,18 +847,18 @@ def main():
     print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
 
     print("")
-    print(r"Total $^{212}$Pb decays: ", GInt1 + GInt2 + len(energy_filtB), " +/- ", np.sqrt(GInt1 + GInt2 + len(energy_filtB)), " Counts")
+    print(r"Total $^{225}$Ac decays: ", GInt1 + GInt2 + len(energy_filtB), " +/- ", np.sqrt(GInt1 + GInt2 + len(energy_filtB)), " Counts")
 
     # Calculate the activity based on the run time
     # Could make it automatic, use timestamp[last] - timestamp[0] but that would be slightly off
     # Might be a good enough approx
-    Pbactivity = (GInt1 + GInt2 + len(energy_filtB))/runtime  # CPS
-    Pbactivity = Pbactivity * (1/37000) # microcurie
+    Acactivity = (GInt1 + GInt2 + len(energy_filtB))/runtime  # CPS
+   Acactivity = Acactivity * (1/37000) # microcurie
     # Use relative counting uncertainty to get activity uncertainty
-    print(r"Total $^{212}$Pb activity: ", Pbactivity, " +/- ", np.sqrt(GInt1 + GInt2) * Pbactivity / (GInt1 + GInt2))
+    print(r"Total $^{225}$Ac activity: ", Acactivity, " +/- ", np.sqrt(GInt1 + GInt2) * Acactivity / (GInt1 + GInt2))
 
     # Calculates and prints the 212Po branching ratio
-    print(r"The Pb-212 branching ratio is: ", (GInt2 + len(energy_filtB))/(GInt1 + GInt2 + len(energy_filtB)))
+    print(r"The Ac-225 branching ratio is: ", (GInt2 + len(energy_filtB))/(GInt1 + GInt2 + len(energy_filtB)))
 
 
     ##############################################################################################
