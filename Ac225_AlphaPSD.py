@@ -107,7 +107,7 @@ def PSDcutB(Earr, PSDarr, psdval, UG):
 
         # Optional version where you are below the mixed line and above 700 ADC - for debugging
         # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
-        if PSDarr[i] <= -0.0002195685673 * Earr[i] + 1.32935 and PSDarr[i] >= psdval and PSDarr[i] <= 1 and UG == 'F' and Earr[i] >= 700:
+        if PSDarr[i] <= -0.000184168 * Earr[i] + 1.18417 and PSDarr[i] >= psdval and PSDarr[i] <= 1 and UG == 'F' and Earr[i] >= 700:
             Filtarr.append(Earr[i])
             trarr.append(i)
 
@@ -139,6 +139,13 @@ def GaussFit(x, a, mu, s):
 
     return a * np.exp(-((x - mu)**2)/(2 * s**2))
 
+def TripleGaussFit(x, a1, mu1, s1, a2, mu2, s2, a3, mu3, s3, bl):
+
+    return GaussFit(x, a1, mu1, s1) + GaussFit(x, a2, mu2, s2) + GaussFit(x, a3, mu3, s3) + bl
+
+def QuadGaussFit(x, a1, mu1, s1, a2, mu2, s2, a3, mu3, s3, a4, mu4, s4, bl):
+
+    return GaussFit(x, a1, mu1, s1) + GaussFit(x, a2, mu2, s2) + GaussFit(x, a3, mu3, s3) + GaussFit(x, a4, mu4, s4) + bl
 
 def main():
     # Read the CAEN data file in csv format
@@ -160,7 +167,13 @@ def main():
     # Also makes it easier to switch to a different computer
     filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ac225")
 
-    data_file = r'DataR_WF_Pb212_Ar_2024_06_14a_t14400_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_21a_t60_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_22a_t60_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_25a_t60_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_26a_t60_Uf.csv'
+    data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_27a_t60_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_01a_t60_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_01b_t60_Uf.csv'
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -395,7 +408,7 @@ def main():
     # Now we start plotting the raw data
 
     # Specify a number of bins
-    nbins = 1000
+    nbins = 512
 
     # Plots the raw spectrum
     fig_rawE, ax_rawE = plt.subplots(layout = 'constrained')
@@ -481,8 +494,8 @@ def main():
     if UG == 'AB': PSDhighA = 0.45
 
     # Using Ultima Gold AB + F
-    if UG == 'F': PSDlowA = 0.25
-    if UG == 'F': PSDhighA = 0.43
+    if UG == 'F': PSDlowA = 0.25 # 0.25
+    if UG == 'F': PSDhighA = 0.43 # 0.43
 
     energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
     print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
@@ -523,7 +536,7 @@ def main():
     #PSDlowC = 0.1
     PSDhighC = PSDlowA
 
-    energy_filtC, tracesind_filtC = Ecut(energy_nocosmic, psd_parameter_nocosmic, 0, PSDlowC, PSDhighC)
+    energy_filtC, tracesind_filtC = Ecut(energy_nocosmic, psd_parameter_nocosmic, 150, PSDlowC, PSDhighC)
     print("Events inside the energy cut (C): ", len(energy_filtC))
     print("Rate of events inside cut C (/s): ", len(energy_filtC) / (runtime))  # Use the run time
     print("")
@@ -632,8 +645,8 @@ def main():
 
     # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
     if UG == 'F':
-        xlineB = np.linspace(1500, 4096,10)
-        PSDlineB = np.full(len(xlineB), -0.0002195685673 * xlineB + 1.32935)
+        xlineB = np.linspace(1000, 4096,10)
+        PSDlineB = np.full(len(xlineB), -0.000184168 * xlineB + 1.18417)
 
     # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
     #xlineB = np.linspace(0, (PSDhighA - 0.02 - 1) / (-0.0006),9)
@@ -641,7 +654,7 @@ def main():
     #xlineB = np.append(xlineB, 4096)
     #PSDlineB = np.append(PSDlineB, PSDhighA - 0.02)
 
-    ElineC = np.full(len(yline), 1000)
+    ElineC = np.full(len(yline), 150)
 
     fig_psdE2, ax_psdE2 = plt.subplots(layout = 'constrained')
     h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
@@ -649,7 +662,7 @@ def main():
     ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
-    #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
+    ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
     plt.ylim([0, 1])
     plt.xlim([0,4095])
 
@@ -796,148 +809,188 @@ def main():
     if UG == 'F':
         p01 = ([2000, 1300, 200])
         p02 = ([2000, 2400, 200])
+        lower_bound = 700
+        upper_bound = 2800
+
+        # Using optical grease
+        lower_bound = 1300
+        upper_bound = 4000
+
 
     # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
-    #p01 = ([2000, 325, 200])
-    #p02 = ([2000, 600, 100])
+    # lower_bound1 = 200
+    # upper_bound1 = 450
 
-    # Fits the data to 2 Gaussians and plots
-    E_param1, E_cov1 = curve_fit(GaussFit, xdata = x1, ydata = y1, p0 = p01, maxfev = 10000)
-    E_param2, E_cov2 = curve_fit(GaussFit, xdata = x2, ydata = y2, p0 = p02, maxfev = 10000)
-    E_err1 = np.sqrt(np.diag(E_cov1))
-    E_err2 = np.sqrt(np.diag(E_cov2))
+    # lower_bound2 = 450
+    # upper_bound2 = 750
+
+    # Get points for each bin center
+    xpeak = bincenters[bincenters > lower_bound]
+    x = xpeak[xpeak < upper_bound]
+    x = x.ravel()
+
+    y = data_entries[bincenters > lower_bound]
+    y = y[xpeak < upper_bound]
+    y = y.ravel()
+
+    # Set parameter guesses
+    # For regular Ultima Gold
+    p01 = ([2000, 800, 200])
+    p02 = ([2000, 1500, 100])
+
+    # For Ultima Gold AB
+    if UG == 'AB':
+        p01 = ([2000, 900, 200])
+        p02 = ([2000, 1700, 100])
+
+    # For Ultima Gold AB + F with a coarse gain of 2.5 fC/(lsb x Vpp)
+    if UG == 'F':
+        p01 = ([2000, 1300, 200])
+        p02 = ([2000, 2400, 200])
+        p0trip = ([2000, 1200, 200, 2000, 1500, 200, 2000, 1750, 200, 20])
+
+        # Using optical grease
+        p0trip = ([2000, 1800, 200, 2000, 2500, 200, 2000, 3500, 200, 20])
 
 
-    xspace1 = np.linspace(lower_bound1, upper_bound1, 1000)
-    xspace2 = np.linspace(lower_bound2, upper_bound2, 1000)
+    # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
+    # p01 = ([2000, 325, 200])
+    # p02 = ([2000, 600, 100])
+
+    # Fits the data to 3 Gaussians and plots
+    E_param, Ecov = curve_fit(TripleGaussFit, xdata=x, ydata=y, p0=p0trip, maxfev=10000)
+    E_err = np.sqrt(np.diag(Ecov))
+
+    xspace = np.linspace(lower_bound, upper_bound, 1000)
 
     # Plots the hitogram and fitted function
-    fitplt, fitax = plt.subplots(layout = 'constrained')
-    fitax.hist(energy_filtA, bins=nbins, range = [0,4095], label = 'PSD Filtered Energy')
-    fitax.plot(xspace1, GaussFit(xspace1, *E_param1), linewidth = 2.5, label = r'$^{212}$Bi $\alpha$ fit')
-    fitax.plot(xspace2, GaussFit(xspace2, *E_param2), linewidth = 2.5, label = r'$^{212}$Po $\alpha$ fit')
+    fitplt, fitax = plt.subplots(layout='constrained')
+    fitax.hist(energy_filtA, bins=nbins, range=[0, 4095], label='PSD Filtered Energy')
+    fitax.plot(xspace, TripleGaussFit(xspace, *E_param), linewidth=2.5, label=r'3 Gaussian Fit')
+    fitax.plot(xspace, GaussFit(xspace, E_param[0], E_param[1], E_param[2]), linewidth=2.5)
+    fitax.plot(xspace, GaussFit(xspace, E_param[3], E_param[4], E_param[5]), linewidth=2.5)
+    fitax.plot(xspace, GaussFit(xspace, E_param[6], E_param[7], E_param[8]), linewidth=2.5)
     plt.legend()
 
-    plt.xlim(0,3000)
+    plt.xlim(0, 4095)
     fitax.set_xlabel('ADC Channel')
     fitax.set_ylabel('Counts')
     plt.show()
 
     # Calculates the integral
-    GInt1, GIntErr1 = quad(GaussFit,lower_bound1, upper_bound1, args=(E_param1[0], E_param1[1], E_param1[2]))
-    GInt2, GIntErr2 = quad(GaussFit,lower_bound2, upper_bound2, args=(E_param2[0], E_param2[1], E_param2[2]))
+    GInt1, GIntErr1 = quad(GaussFit, lower_bound, upper_bound, args=(E_param[0], E_param[1], E_param[2]))
+    GInt2, GIntErr2 = quad(GaussFit, lower_bound, upper_bound, args=(E_param[3], E_param[4], E_param[5]))
+    GInt3, GIntErr3 = quad(GaussFit, lower_bound, upper_bound, args=(E_param[6], E_param[7], E_param[8]))
 
     # Correct integrals for bin width
-    GInt1 = GInt1/binwidth
-    GInt2 = GInt2/binwidth
+    GInt1 = GInt1 / binwidth
+    GInt2 = GInt2 / binwidth
+    GInt3 = GInt3 / binwidth
 
     # Use counting statistics for the uncertainty: ~ sqrt(num counts)
     GIntErr1 = np.sqrt(GInt1)
     GIntErr2 = np.sqrt(GInt2)
+    GIntErr3 = np.sqrt(GInt3)
 
     # Prints out the fitting parameters and integrals
-    print("The fit parameters are:")
-    print("Amplitude 1: ", E_param1[0], " +/-", E_err1[0], " Counts")
-    print("Mean 1: ", E_param1[1], " +/-", E_err1[1], " ADC Channel")
-    print("Stdev 1: ", E_param1[2], " +/-", E_err1[2], " ADC Channel")
+    print("The triplet fit parameters are:")
+    print("Amplitude 1: ", E_param[0], " +/-", E_err[0], " Counts")
+    print("Mean 1: ", E_param[1], " +/-", E_err[1], " ADC Channel")
+    print("Stdev 1: ", E_param[2], " +/-", E_err[2], " ADC Channel")
     print("Integral 1: ", GInt1, " +/-", GIntErr1, " Counts")
-    print("Amplitude 2: ", E_param2[0], " +/-", E_err2[0], "Counts")
-    print(" Mean 2: ", E_param2[1], " +/-", E_err2[1], "ADC Channel")
-    print(" Stdev 2: ", E_param2[2], " +/-", E_err2[2], " ADC Channel")
+    print("Amplitude 2: ", E_param[3], " +/-", E_err[3], "Counts")
+    print(" Mean 2: ", E_param[4], " +/-", E_err[4], "ADC Channel")
+    print(" Stdev 2: ", E_param[5], " +/-", E_err[5], " ADC Channel")
     print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
+    print("Amplitude 3: ", E_param[6], " +/-", E_err[6], "Counts")
+    print(" Mean 3: ", E_param[7], " +/-", E_err[7], "ADC Channel")
+    print(" Stdev 3: ", E_param[8], " +/-", E_err[8], " ADC Channel")
+    print("Integral 3: ", GInt3, " +/-", GIntErr3, " Counts")
 
     print("")
-    print(r"Total $^{225}$Ac decays: ", GInt1 + GInt2 + len(energy_filtB), " +/- ", np.sqrt(GInt1 + GInt2 + len(energy_filtB)), " Counts")
+    print(r"Total $^{225}$Ac decays: ", GInt1 + GInt2 + GInt3, " +/- ",
+          np.sqrt(GInt1 + GInt2 + GInt3), " Counts")
 
     # Calculate the activity based on the run time
     # Could make it automatic, use timestamp[last] - timestamp[0] but that would be slightly off
     # Might be a good enough approx
-    Acactivity = (GInt1 + GInt2 + len(energy_filtB))/runtime  # CPS
-   Acactivity = Acactivity * (1/37000) # microcurie
+    Acactivity = (GInt1 + GInt2 + GInt3) / runtime  # CPS
+    Acactivity = Acactivity * (1 / 37000)  # microcurie
     # Use relative counting uncertainty to get activity uncertainty
-    print(r"Total $^{225}$Ac activity: ", Acactivity, " +/- ", np.sqrt(GInt1 + GInt2) * Acactivity / (GInt1 + GInt2))
+    Acerror = np.sqrt(GInt1 + GInt2 + GInt3 + len(energy_filtC) + len(energy_filtB)) * Acactivity / (GInt1 + GInt2 + GInt3 + len(energy_filtC) + len(energy_filtB))
+    print(r"Total $^{225}$Ac activity from 3 Gaussian fit: ", Acactivity, " +/- ", Acerror, " microcuries" )
 
-    # Calculates and prints the 212Po branching ratio
-    print(r"The Ac-225 branching ratio is: ", (GInt2 + len(energy_filtB))/(GInt1 + GInt2 + len(energy_filtB)))
+    # Fits the data to 4 Gaussians and plots
+    p0quad = ([2000, 1200, 200, 2000, 1400, 200, 2000, 1700, 200, 2000, 2200, 200, 0])
 
+    # Using optical grease
+    p0quad = ([2000, 1700, 200, 2000, 2000, 200, 2000, 2500, 200, 2000, 3300, 200, 0])
+    #p0quad = ([2000, 1500, 200, 2000, 1800, 200, 2000, 2300, 200, 2000, 3200, 200, 0])
+    #p0quad = ([2000, 1600, 200, 2000, 1800, 200, 2000, 2000, 200, 2000, 3000, 200, 0])
 
-    ##############################################################################################
-    # This block of code should not be left turned on - it will take a lot of time
-    # To turn it on/off, set pg_analysis to False
-    pg_analysis = False
-    # If pg_analysis = False or wavesdat = False, this will not run, both must be set to 1 to run
-    # What this block of code does is integrate the region of each waveform before the pre-gate
-    # Then it will make a three dimensional plot of E vs PSD vs E (before pre-gate)
-    # This block of code is useful for understanding features on the E vs PSD plot
-    # To interact with the 3d plot, disable *Settings | Tools | Python Scientific | Show plots in toolwindow*
-    # When disabled, this will print all the canvases to a window.
-    # To move between plots, exit your current plot window
-    if pg_analysis == True and wavesdat == True:
+    E_param_quad, Ecov_quad = curve_fit(QuadGaussFit, xdata=x, ydata=y, p0=p0quad, bounds=((0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0),(np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf)), maxfev=100000)
+    E_err_quad = np.sqrt(np.diag(Ecov_quad))
 
-        # Define a new energy array for the energy before the pre-gate
-        energy_before = []
+    print('Quad fit params: ', E_param_quad)
 
-        # Create a new waveform array and cut off everything after the pre-gate
-        # So the trigger is at 96 ns and the pre-gate is a 86 ns. So cut off everything after 43 samples
-        traces_before = traces_nocosmic[:, 0:43]
-        print(len(traces_before))
-        # Integrate each sliced trace region. Don't care about energy units right now
-        for i in range(len(traces_before)):
-            energy_before.append(np.sum(traces_before[i]))
+    fitplt_quad, fitax_quad = plt.subplots(layout='constrained')
+    fitax_quad.hist(energy_filtA, bins=nbins, range=[0, 4095], label='PSD Filtered Energy')
+    fitax_quad.plot(xspace, QuadGaussFit(xspace, *E_param_quad), linewidth=2.5, label=r'4 Gaussian Fit')
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[0], E_param_quad[1], E_param_quad[2]), linewidth=2.5)
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[3], E_param_quad[4], E_param_quad[5]), linewidth=2.5)
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[6], E_param_quad[7], E_param_quad[8]), linewidth=2.5)
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[9], E_param_quad[10], E_param_quad[11]), linewidth=2.5)
+    #plt.legend()
 
-        energy_before = np.array(energy_before)
+    plt.xlim(0, 4095)
+    fitax_quad.set_xlabel('ADC Channel')
+    fitax_quad.set_ylabel('Counts')
+    plt.show()
 
-        ftb, axtb = plt.subplots(layout='constrained')
-        axtb.set_title('Traces')
-        axtb.set_ylabel('Voltage')
-        axtb.set_xlabel('Time (ns)')
+    #Using 4 Gaussian fit to calculate activity
+    # Calculates the integral
+    GInt1, GIntErr1 = quad(GaussFit, lower_bound, upper_bound, args=(E_param_quad[0], E_param_quad[1], E_param_quad[2]))
+    GInt2, GIntErr2 = quad(GaussFit, lower_bound, upper_bound, args=(E_param_quad[3], E_param_quad[4], E_param_quad[5]))
+    GInt3, GIntErr3 = quad(GaussFit, lower_bound, upper_bound, args=(E_param_quad[6], E_param_quad[7], E_param_quad[8]))
+    GInt4, GIntErr4 = quad(GaussFit, lower_bound, upper_bound, args=(E_param_quad[9], E_param_quad[10], E_param_quad[11]))
 
-        xStart = 0
-        xEnd = len(traces_before[1]) - 1
-        wavetime = np.linspace(xStart, xEnd, len(traces_before[1]))
+    # Correct integrals for bin width
+    GInt1 = GInt1 / binwidth
+    GInt2 = GInt2 / binwidth
+    GInt3 = GInt3 / binwidth
+    GInt4 = GInt4 / binwidth
 
-        # Convert sample number to time
-        # CAEN samples every 2 ns
-        wavetime = wavetime * 2
+    # Use counting statistics for the uncertainty: ~ sqrt(num counts)
+    GIntErr1 = np.sqrt(GInt1)
+    GIntErr2 = np.sqrt(GInt2)
+    GIntErr3 = np.sqrt(GInt3)
+    GIntErr4 = np.sqrt(GInt4)
 
-        for i in range(1000):
-            axtb.plot(wavetime, traces_before[i], label=' trace')
-        axtb.set_xlim([xStart, xEnd * 2])
-        axtb.set_ylim([9000, 14000])
+    # Prints out the fitting parameters and integrals
+    print("The quad fit parameters are:")
+    print("Amplitude 1: ", E_param_quad[0], " +/-", E_err_quad[0], " Counts")
+    print("Mean 1: ", E_param_quad[1], " +/-", E_err_quad[1], " ADC Channel")
+    print("Stdev 1: ", E_param_quad[2], " +/-", E_err_quad[2], " ADC Channel")
+    print("Integral 1: ", GInt1, " +/-", GIntErr1, " Counts")
+    print("Amplitude 2: ", E_param_quad[3], " +/-", E_err_quad[3], "Counts")
+    print(" Mean 2: ", E_param_quad[4], " +/-", E_err_quad[4], "ADC Channel")
+    print(" Stdev 2: ", E_param_quad[5], " +/-", E_err_quad[5], " ADC Channel")
+    print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
+    print("Amplitude 3: ", E_param_quad[6], " +/-", E_err_quad[6], "Counts")
+    print(" Mean 3: ", E_param_quad[7], " +/-", E_err_quad[7], "ADC Channel")
+    print(" Stdev 3: ", E_param_quad[8], " +/-", E_err_quad[8], " ADC Channel")
+    print("Integral 3: ", GInt3, " +/-", GIntErr3, " Counts")
+    print("Amplitude 4: ", E_param_quad[9], " +/-", E_err_quad[9], "Counts")
+    print(" Mean 4: ", E_param_quad[10], " +/-", E_err_quad[10], "ADC Channel")
+    print(" Stdev 4: ", E_param_quad[11], " +/-", E_err_quad[11], " ADC Channel")
+    print("Integral 4: ", GInt4, " +/-", GIntErr4, " Counts")
 
-        # plt.legend()
-        plt.show(block=True)  # Don't block terminal by default.
-        # quit()
-
-        # Three-dimensional plot
-        #Nx = 4095
-        #Ny = 1
-        #Nz = 1000000
-
-        fig3d = plt.figure()
-        ax3d = fig3d.add_subplot(projection = '3d')
-        ax3d.plot_trisurf(energy_nocosmic, psd_parameter_nocosmic, energy_before)
-
-        ax3d.set_xlabel('ADC Channel')
-        ax3d.set_ylabel('PSD Parameter')
-        ax3d.set_zlabel('Energy Before Pre-Gate')
-
-        plt.show()
-
-        figEE, axEE = plt.subplots()
-        axEE.scatter(energy_nocosmic, energy_before)
-        axEE.set_xlabel('ADC Channel')
-        axEE.set_ylabel('Energy Before Pre-Gate')
-
-        plt.show()
-
-        figpsdE, figpsdE = plt.subplots()
-        figpsdE.scatter(psd_parameter_nocosmic, energy_before)
-        figpsdE.set_xlabel('PSD Parameter')
-        figpsdE.set_ylabel('Energy Before Pre-Gate')
-
-        plt.show()
-
+    Acactivity = (GInt1 + GInt2 + GInt3 + GInt4) / runtime  # CPS
+    Acactivity = Acactivity * (1 / 37000)  # microcurie
+    # Use relative counting uncertainty to get activity uncertainty
+    Acerror = np.sqrt(GInt1 + GInt2 + GInt3 + GInt4 + len(energy_filtC) + len(energy_filtB)) * Acactivity / (GInt1 + GInt2 + GInt3 + GInt4 + len(energy_filtC) + len(energy_filtB))
+    print(r"Total $^{225}$Ac activity from 4 Gaussian fit: ", Acactivity, " +/- ", Acerror, " microcuries" )
+    print(r"Total alpha counts: ", GInt1 + GInt2 + GInt3 + GInt4 + len(energy_filtB))
 
 
 # Runs the main file
