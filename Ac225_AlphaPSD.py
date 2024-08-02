@@ -78,7 +78,13 @@ def PSDcutA(low, high, Earr, PSDarr):
 
     # iterates over the PSD array and filters for the high and low gates
     for i in range(len(PSDarr)):
-        if PSDarr[i] >= low and PSDarr[i] <= high:
+        #if PSDarr[i] >= low and PSDarr[i] <= high:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
+
+        # For a non-straight lower PSD gate with UG F
+        #if PSDarr[i] >= -0.0001166667 * Earr[i] + 0.35 and PSDarr[i] >= low and PSDarr[i] <= high:
+        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
             Filtarr.append(Earr[i])
             trarr.append(i)
 
@@ -165,15 +171,16 @@ def main():
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ac225")
+    filepath = Path(r"/Users/jphillips409/Documents/ThorekPb212/Ac225")
 
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_21a_t60_Uf.csv'
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_22a_t60_Uf.csv'
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_25a_t60_Uf.csv'
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_26a_t60_Uf.csv'
-    data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_27a_t60_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_27a_t60_Uf.csv'
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_01a_t60_Uf.csv'
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_01b_t60_Uf.csv'
+    data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_12a_t240_Uf.csv'
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -494,8 +501,8 @@ def main():
     if UG == 'AB': PSDhighA = 0.45
 
     # Using Ultima Gold AB + F
-    if UG == 'F': PSDlowA = 0.25 # 0.25
-    if UG == 'F': PSDhighA = 0.43 # 0.43
+    if UG == 'F': PSDlowA = 0.23 #0.25
+    if UG == 'F': PSDhighA = 0.38 #0.43
 
     energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
     print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
@@ -633,8 +640,13 @@ def main():
     # Draws the straight A cuts
     xline = np.linspace(0,4096,10)
     yline = np.linspace(0,PSDlowA,10)
-    PSDlowlineA = np.full(len(xline), PSDlowA)
+    #PSDlowlineA = np.full(len(xline), PSDlowA)
     PSDhighlineA = np.full(len(xline), PSDhighA)
+
+    xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442), 9)
+    yline = np.full(len(xline), -0.0001442 * xline + 0.375)
+    xline = np.append(xline, 4096)
+    PSDlowlineA = np.append(yline, PSDlowA)
 
     #Draws the B cut
     # For regular Ultima Gold
@@ -850,7 +862,8 @@ def main():
         p0trip = ([2000, 1200, 200, 2000, 1500, 200, 2000, 1750, 200, 20])
 
         # Using optical grease
-        p0trip = ([2000, 1800, 200, 2000, 2500, 200, 2000, 3500, 200, 20])
+        #p0trip = ([2000, 1800, 200, 2000, 2500, 200, 2000, 3500, 200, 20])
+        p0trip = ([2000, 1800, 200, 2000, 2200, 200, 2000, 2900, 200, 20])
 
 
     # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
@@ -924,9 +937,9 @@ def main():
     p0quad = ([2000, 1200, 200, 2000, 1400, 200, 2000, 1700, 200, 2000, 2200, 200, 0])
 
     # Using optical grease
-    p0quad = ([2000, 1700, 200, 2000, 2000, 200, 2000, 2500, 200, 2000, 3300, 200, 0])
+    #p0quad = ([2000, 1700, 200, 2000, 2000, 200, 2000, 2500, 200, 2000, 3300, 200, 0])
     #p0quad = ([2000, 1500, 200, 2000, 1800, 200, 2000, 2300, 200, 2000, 3200, 200, 0])
-    #p0quad = ([2000, 1600, 200, 2000, 1800, 200, 2000, 2000, 200, 2000, 3000, 200, 0])
+    p0quad = ([2000, 1500, 200, 2000, 1800, 200, 2000, 2000, 200, 2000, 3000, 200, 0])
 
     E_param_quad, Ecov_quad = curve_fit(QuadGaussFit, xdata=x, ydata=y, p0=p0quad, bounds=((0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0),(np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf)), maxfev=100000)
     E_err_quad = np.sqrt(np.diag(Ecov_quad))

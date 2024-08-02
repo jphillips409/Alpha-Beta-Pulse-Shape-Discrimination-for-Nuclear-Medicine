@@ -60,7 +60,7 @@ def Unpack(name, alldat, waves):
     if alldat is True and waves is True:
         data = np.genfromtxt(name, skip_header = True, delimiter = ';')
     elif alldat is False and waves is True:
-        data = np.genfromtxt(name, skip_header = True, delimiter =';', max_rows = 50000)
+        data = np.genfromtxt(name, skip_header = True, delimiter =';', max_rows = 200000)
     elif alldat is True and waves is False:
         data = np.genfromtxt(name, skip_header = True, delimiter =';', usecols = (0, 1, 2, 3, 4, 5))
     else:
@@ -72,7 +72,7 @@ def Unpack(name, alldat, waves):
 # Functions to accept and output an energy array given PSD gates and the PSD array
 # For cut A - straight lines
 # return trace array indices so that you can look at those waveforms
-def PSDcutA(low, high, Earr, PSDarr):
+def PSDcutA(low, high, Earr, PSDarr, UG):
     Filtarr = []
     trarr = []
 
@@ -82,9 +82,18 @@ def PSDcutA(low, high, Earr, PSDarr):
             #Filtarr.append(Earr[i])
             #trarr.append(i)
 
-        # For a non-straight lower PSD gate
-        #if PSDarr[i] >= -0.0001166667 * Earr[i] + 0.35 and PSDarr[i] >= low and PSDarr[i] <= high:
-        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
+    # For a non-straight lower PSD gate with regular UG
+        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.2 and PSDarr[i] >= low and PSDarr[i] <= high and UG == 'R':
+            Filtarr.append(Earr[i])
+            trarr.append(i)
+
+        # For a non-straight lower PSD gate with UG AB
+        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.4 and PSDarr[i] >= low and PSDarr[i] <= high and UG == 'AB':
+            Filtarr.append(Earr[i])
+            trarr.append(i)
+
+        # For a non-straight lower PSD gate with UG F
+        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high and UG == 'F':
             Filtarr.append(Earr[i])
             trarr.append(i)
 
@@ -179,7 +188,7 @@ def main():
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212")
+    filepath = Path(r"/Users/jphillips409/Documents/ThorekPb212/Pb212")
 
     #data_file = r'SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
     #data_file =  r'SDataR_WF_Pb212_Ar_2024_05_07_t600.csv'
@@ -577,7 +586,7 @@ def main():
 
     # Using AB Ultima Gold
     if UG == 'AB': PSDlowA = 0.27
-    if UG == 'AB': PSDhighA = 0.45
+    if UG == 'AB': PSDhighA = 0.44
 
     # Using Ultima Gold AB + F
     if UG == 'F': PSDlowA = 0.25
@@ -587,7 +596,7 @@ def main():
     if UG == 'F': PSDlowA = 0.26
     if UG == 'F': PSDhighA = 0.4
 
-    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
+    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic, UG)
     print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
     print("Events inside the PSD cut A: ", len(energy_filtA))
 
@@ -647,6 +656,28 @@ def main():
         axtr_A.set_xlim([xStart, 200])
         axtr_A.set_ylim([yStart, yEnd])
         plt.show(block=True)  # Don't block terminal by default.
+
+        # PLot the waveforms as a 2D histogram
+        # Have to generate two 1D arrays where one is 0-247 repeated
+        traces_filtA_wavetime = []
+        traces_filtA_ADC = []
+
+        for i in range(len(tracesind_filtA)):
+            for j in range(len(traces_nocosmic[tracesind_filtA[i]])):
+                traces_filtA_wavetime.append(j)
+
+        for i in range(len(tracesind_filtA)):
+            for j in range(len(traces_nocosmic[tracesind_filtA[i]])):
+                traces_filtA_ADC.append(traces_nocosmic[tracesind_filtA[i]][j])
+
+        ftr_A_hist, axtr_A_hist = plt.subplots(layout='constrained')
+        h = axtr_A_hist.hist2d(traces_filtA_wavetime, traces_filtA_ADC, bins=[248, 5000], range=[[0, 248], [8000, 14000]], norm=mpl.colors.Normalize(), cmin=1)
+        ftr_A_hist.colorbar(h[3], ax=axtr_A_hist)
+        plt.xlim([40., 80.])
+        axtr_A_hist.set_ylabel('ADC Channel')
+        axtr_A_hist.set_xlabel('Sample Number')
+        axtr_A_hist.set_zscale('log')
+        plt.show()
 
         ftr_Abtw, axtr_Abtw = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the the two alpha peaks and plot them
@@ -732,17 +763,32 @@ def main():
     # For a non-straight A cut
     #xline = np.linspace(0, (PSDlowA - 0.35) / (-0.0001166667),9)
     #yline = np.full(len(xline), -0.0001166667 * xline + 0.35)
-    xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
-    yline = np.full(len(xline), -0.0001442 * xline + 0.375)
-    xline = np.append(xline, 4096)
-    PSDlowlineA = np.append(yline, PSDlowA)
+
+    if UG == 'R':
+        xline = np.linspace(0, (PSDlowA - 0.2) / (-0.0001442),9)
+        yline = np.full(len(xline), -0.0001442 * xline + 0.2)
+        xline = np.append(xline, 4096)
+        PSDlowlineA = np.append(yline, PSDlowA)
+
+    if UG == 'AB':
+        xline = np.linspace(0, (PSDlowA - 0.4) / (-0.0001442),9)
+        yline = np.full(len(xline), -0.0001442 * xline + 0.4)
+        xline = np.append(xline, 4096)
+        PSDlowlineA = np.append(yline, PSDlowA)
+
+    if UG == 'F':
+        xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
+        yline = np.full(len(xline), -0.0001442 * xline + 0.375)
+        xline = np.append(xline, 4096)
+        PSDlowlineA = np.append(yline, PSDlowA)
 
     #Draws the B cut
     # For regular Ultima Gold
-   # xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
-   # PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
-   # xlineB = np.append(xlineB, 4096)
-   # PSDlineB = np.append(PSDlineB, PSDhighA)
+    if UG == 'R' or UG == 'AB':
+        xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
+        PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
+        xlineB = np.append(xlineB, 4096)
+        PSDlineB = np.append(PSDlineB, PSDhighA)
 
     # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
     if UG == 'F':
@@ -948,7 +994,7 @@ def main():
 
     #plt.xlim(750,3000) # With F UG
     plt.xlim(0,4095) # With F UG and optical grease
-    plt.ylim(0,2500)
+    plt.ylim(0,4000)
     fitax.set_xlabel('ADC Channel')
     fitax.set_ylabel('Counts')
     plt.show()
