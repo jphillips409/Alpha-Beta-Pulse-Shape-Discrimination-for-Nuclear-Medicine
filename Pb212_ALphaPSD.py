@@ -20,6 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.integrate import quad
+from scipy.interpolate import CubicSpline
 import matplotlib as mpl
 from pathlib import Path
 from mpl_toolkits.mplot3d import axes3d
@@ -60,7 +61,7 @@ def Unpack(name, alldat, waves):
     if alldat is True and waves is True:
         data = np.genfromtxt(name, skip_header = True, delimiter = ';')
     elif alldat is False and waves is True:
-        data = np.genfromtxt(name, skip_header = True, delimiter =';', max_rows = 200000)
+        data = np.genfromtxt(name, skip_header = True, delimiter =';', max_rows = 50000)
     elif alldat is True and waves is False:
         data = np.genfromtxt(name, skip_header = True, delimiter =';', usecols = (0, 1, 2, 3, 4, 5))
     else:
@@ -72,7 +73,7 @@ def Unpack(name, alldat, waves):
 # Functions to accept and output an energy array given PSD gates and the PSD array
 # For cut A - straight lines
 # return trace array indices so that you can look at those waveforms
-def PSDcutA(low, high, Earr, PSDarr, UG):
+def PSDcutA(low, high, Earr, PSDarr):
     Filtarr = []
     trarr = []
 
@@ -82,18 +83,9 @@ def PSDcutA(low, high, Earr, PSDarr, UG):
             #Filtarr.append(Earr[i])
             #trarr.append(i)
 
-    # For a non-straight lower PSD gate with regular UG
-        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.2 and PSDarr[i] >= low and PSDarr[i] <= high and UG == 'R':
-            Filtarr.append(Earr[i])
-            trarr.append(i)
-
-        # For a non-straight lower PSD gate with UG AB
-        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.4 and PSDarr[i] >= low and PSDarr[i] <= high and UG == 'AB':
-            Filtarr.append(Earr[i])
-            trarr.append(i)
-
-        # For a non-straight lower PSD gate with UG F
-        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high and UG == 'F':
+        # For a non-straight lower PSD gate
+        #if PSDarr[i] >= -0.0001166667 * Earr[i] + 0.35 and PSDarr[i] >= low and PSDarr[i] <= high:
+        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
             Filtarr.append(Earr[i])
             trarr.append(i)
 
@@ -188,7 +180,7 @@ def main():
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"/Users/jphillips409/Documents/ThorekPb212/Pb212")
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212")
 
     #data_file = r'SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
     #data_file =  r'SDataR_WF_Pb212_Ar_2024_05_07_t600.csv'
@@ -563,6 +555,9 @@ def main():
     ax_rawE_nocosmic.set_ylabel('Counts')
     plt.ylim([0,2500])
     plt.xlim([0,4095])
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.png", format='png')
     plt.show()
 
     # Plots the PSD parameter vs the energy after removing cosmic rays - only channel 1
@@ -586,7 +581,7 @@ def main():
 
     # Using AB Ultima Gold
     if UG == 'AB': PSDlowA = 0.27
-    if UG == 'AB': PSDhighA = 0.44
+    if UG == 'AB': PSDhighA = 0.45
 
     # Using Ultima Gold AB + F
     if UG == 'F': PSDlowA = 0.25
@@ -596,7 +591,7 @@ def main():
     if UG == 'F': PSDlowA = 0.26
     if UG == 'F': PSDhighA = 0.4
 
-    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic, UG)
+    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
     print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
     print("Events inside the PSD cut A: ", len(energy_filtA))
 
@@ -644,39 +639,39 @@ def main():
 
     # Plots traces for each cut
     if wavesdat is True:
+        sampledat = np.linspace(0,len(traces_nocosmic[0])-1, len(traces_nocosmic[0]))
         ftr_A, axtr_A = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
         for i in range(5):
-            axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace')
+            axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace', linewidth=2)
         #axtr_A.set_title('Traces in Cut A')
         axtr_A.set_ylabel('ADC Channel')
         yStart = 8000
         yEnd = 14000
         axtr_A.set_xlabel('Time (ns)')
-        axtr_A.set_xlim([xStart, 200])
+        axtr_A.set_xlim([75, 175])
         axtr_A.set_ylim([yStart, yEnd])
         plt.show(block=True)  # Don't block terminal by default.
 
-        # PLot the waveforms as a 2D histogram
-        # Have to generate two 1D arrays where one is 0-247 repeated
-        traces_filtA_wavetime = []
+        # Make a 2D hist for A traces
+        # Have to make 1D arrays for trace ADC and trace sample
+        traces_filtA_sample = []
         traces_filtA_ADC = []
 
         for i in range(len(tracesind_filtA)):
             for j in range(len(traces_nocosmic[tracesind_filtA[i]])):
-                traces_filtA_wavetime.append(j)
+                traces_filtA_sample.append(j)
 
         for i in range(len(tracesind_filtA)):
             for j in range(len(traces_nocosmic[tracesind_filtA[i]])):
                 traces_filtA_ADC.append(traces_nocosmic[tracesind_filtA[i]][j])
 
-        ftr_A_hist, axtr_A_hist = plt.subplots(layout='constrained')
-        h = axtr_A_hist.hist2d(traces_filtA_wavetime, traces_filtA_ADC, bins=[248, 5000], range=[[0, 248], [8000, 14000]], norm=mpl.colors.Normalize(), cmin=1)
+        ftr_A_hist, axtr_A_hist = plt.subplots(layout = 'constrained')
+        h = axtr_A_hist.hist2d(traces_filtA_sample, traces_filtA_ADC, bins=[248,5000], range=[[0,248], [7000,14000]], norm=mpl.colors.LogNorm(), cmin = 1)
         ftr_A_hist.colorbar(h[3], ax=axtr_A_hist)
-        plt.xlim([40., 80.])
+        plt.xlim([40,80])
         axtr_A_hist.set_ylabel('ADC Channel')
         axtr_A_hist.set_xlabel('Sample Number')
-        axtr_A_hist.set_zscale('log')
         plt.show()
 
         ftr_Abtw, axtr_Abtw = plt.subplots(layout = 'constrained')
@@ -703,25 +698,48 @@ def main():
         ftr_B, axtr_B = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
         for i in range(3):
-            if i < len(energy_filtB): axtr_B.plot(wavetime, traces_nocosmic[tracesind_filtB[5+i]], label=' trace')
+            if i < len(energy_filtB): axtr_B.plot(wavetime, traces_nocosmic[tracesind_filtB[5+i]], label=' trace', linewidth=2)
         #axtr_B.set_title('Traces in cut B')
         axtr_B.set_ylabel('ADC Channel')
         axtr_B.set_xlabel('Time (ns)')
         axtr_B.set_xlim([xStart, xEnd * 2])
         axtr_B.set_ylim([yStart, yEnd])
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlphaMixed.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Wavefomrs_BetaAlphaMixed.png", format='png')
         plt.show(block=True)  # Don't block terminal by default.
+
+        # Make a 2D hist for B traces
+        # Have to make 1D arrays for trace ADC and trace sample
+        traces_filtB_sample = []
+        traces_filtB_ADC = []
+
+        for i in range(len(tracesind_filtB)):
+            for j in range(len(traces_nocosmic[tracesind_filtB[i]])):
+                traces_filtB_sample.append(j)
+
+        for i in range(len(tracesind_filtB)):
+            for j in range(len(traces_nocosmic[tracesind_filtB[i]])):
+                traces_filtB_ADC.append(traces_nocosmic[tracesind_filtB[i]][j])
+
+        ftr_B_hist, axtr_B_hist = plt.subplots(layout = 'constrained')
+        h = axtr_B_hist.hist2d(traces_filtB_sample, traces_filtB_ADC, bins=[248,1000], range=[[0,248], [8000,14000]], norm=mpl.colors.LogNorm(), cmin = 1)
+        ftr_B_hist.colorbar(h[3], ax=axtr_B_hist)
+        plt.xlim([40,124])
+        axtr_B_hist.set_ylabel('ADC Channel')
+        axtr_B_hist.set_xlabel('Sample Number')
+        plt.show()
 
         ftr_C, axtr_C = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
         counter_filtC = 0
         for i in range(5):
             #if (energy_filtC[i] < 400):
-            axtr_C.plot(wavetime, traces_nocosmic[tracesind_filtC[i]], label=' trace')
+            axtr_C.plot(wavetime, traces_nocosmic[tracesind_filtC[i]], label=' trace', linewidth=2)
         #axtr_C.set_title('Beta Traces')
         axtr_C.set_ylabel('ADC Channel')
         axtr_C.set_xlabel('Time (ns)')
         #axtr_C.set_xlim([xStart, xEnd * 2])
-        axtr_C.set_xlim([xStart, 200])
+        axtr_C.set_xlim([75, 175])
         axtr_C.set_ylim([yStart, yEnd])
 
         ftr_CHE, axtr_CHE = plt.subplots(layout = 'constrained')
@@ -736,6 +754,62 @@ def main():
         axtr_CHE.set_xlabel('Time (ns)')
         axtr_CHE.set_xlim([60, 600])
         axtr_CHE.set_ylim([10000, yEnd])
+
+        # Finds a beta trace with the same trace max as the chosen alpha trace
+        index_AC = 0
+        for i in range(len(tracesind_filtC)):
+            if np.abs(np.min(traces_nocosmic[tracesind_filtC[i]]) - 9500) < 5:
+                index_AC = tracesind_filtC[i]
+                break
+        # Plots an alpha and a beta trace
+        ftr_AC, axtr_AC = plt.subplots(layout = 'constrained')
+        # Looks for traces that fall within the gate and plot them
+        axtr_AC.plot(wavetime, traces_nocosmic[tracesind_filtA[3]], label='Alpha Trace', linewidth = 2, color='black', linestyle='dashed')
+        axtr_AC.plot(wavetime, traces_nocosmic[index_AC], label='Beta Trace', linewidth = 2, color='orange')
+        #axtr_AC.plot([86,86], [13200,9000], label='Short Gate', linewidth = 2, color='red')
+        #axtr_AC.plot([106,106], [13200,9000], linewidth = 2, color='red')
+        #axtr_AC.plot([175,175], [13200,9000], label='Long Gate', linewidth = 2, color='Blue')
+        #axtr_C.set_title('Beta Traces')
+        axtr_AC.set_ylabel('ADC Channel')
+        axtr_AC.set_xlabel('Time (ns)')
+        #axtr_C.set_xlim([xStart, xEnd * 2])
+        axtr_AC.set_xlim([75, 175])
+        axtr_AC.set_ylim([yStart, yEnd])
+        axtr_AC.legend(loc='lower right')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha.png", format='png')
+        plt.show()
+
+        # Plots the overlaid alpha/beta traces but smoothed with a spline
+        xAC_spline = np.linspace(wavetime[0], wavetime[-1], 1000)
+        yAC_spline_alpha = CubicSpline(wavetime, traces_nocosmic[tracesind_filtA[3]])
+        yAC_spline_beta = CubicSpline(wavetime, traces_nocosmic[index_AC])
+        # Plots an alpha and a beta trace with the long and short integration gates drawn
+
+        xAC_LG = [86, 410]
+        yAC_LG = [9250, 9250]
+        capsAC_LG = [250, 250] # Draw endcaps for the line
+
+        xAC_SG = [86, 116]
+        yAC_SG = [8700, 8700]
+        capsAC_SG = [250, 250] # Draw endcaps for the line
+
+        ftr_AC_spline, axtr_AC_spline = plt.subplots(layout = 'constrained')
+        axtr_AC_spline.plot(xAC_spline, yAC_spline_alpha(xAC_spline), label='Alpha Trace', linewidth = 2, color='black', linestyle='dashed')
+        axtr_AC_spline.plot(xAC_spline, yAC_spline_beta(xAC_spline), label='Beta Trace', linewidth = 2, color='orange')
+        axtr_AC_spline.plot(xAC_LG, yAC_LG, linewidth = 2, color='blue')
+        axtr_AC_spline.errorbar(xAC_LG, yAC_LG, yerr=capsAC_LG, color='blue', ls='none', elinewidth=2, ecolor='blue')
+        axtr_AC_spline.text(125, 8800, r'$Q_{Long}$', color='blue')
+        axtr_AC_spline.plot(xAC_SG, yAC_SG, linewidth=2, color='red')
+        axtr_AC_spline.errorbar(xAC_SG, yAC_SG, yerr=capsAC_SG, color='red', ls='none', elinewidth=2, ecolor='red')
+        axtr_AC_spline.text(95, 8300, r'$Q_{Short}$', color='red')
+        axtr_AC_spline.set_ylabel('Voltage (mV)')
+        axtr_AC_spline.set_xlabel('Time (ns)')
+        axtr_AC_spline.set_xlim([75, 175])
+        axtr_AC_spline.set_ylim([yStart, yEnd])
+        axtr_AC_spline.legend(loc='lower right')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha_Splined.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha_Splined.png", format='png')
 
         # Draws the long and short gates if you want
         #LG_xline = np.linspace(86,196,2)
@@ -763,32 +837,17 @@ def main():
     # For a non-straight A cut
     #xline = np.linspace(0, (PSDlowA - 0.35) / (-0.0001166667),9)
     #yline = np.full(len(xline), -0.0001166667 * xline + 0.35)
-
-    if UG == 'R':
-        xline = np.linspace(0, (PSDlowA - 0.2) / (-0.0001442),9)
-        yline = np.full(len(xline), -0.0001442 * xline + 0.2)
-        xline = np.append(xline, 4096)
-        PSDlowlineA = np.append(yline, PSDlowA)
-
-    if UG == 'AB':
-        xline = np.linspace(0, (PSDlowA - 0.4) / (-0.0001442),9)
-        yline = np.full(len(xline), -0.0001442 * xline + 0.4)
-        xline = np.append(xline, 4096)
-        PSDlowlineA = np.append(yline, PSDlowA)
-
-    if UG == 'F':
-        xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
-        yline = np.full(len(xline), -0.0001442 * xline + 0.375)
-        xline = np.append(xline, 4096)
-        PSDlowlineA = np.append(yline, PSDlowA)
+    xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
+    yline = np.full(len(xline), -0.0001442 * xline + 0.375)
+    xline = np.append(xline, 4096)
+    PSDlowlineA = np.append(yline, PSDlowA)
 
     #Draws the B cut
     # For regular Ultima Gold
-    if UG == 'R' or UG == 'AB':
-        xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
-        PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
-        xlineB = np.append(xlineB, 4096)
-        PSDlineB = np.append(PSDlineB, PSDhighA)
+   # xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
+   # PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
+   # xlineB = np.append(xlineB, 4096)
+   # PSDlineB = np.append(PSDlineB, PSDhighA)
 
     # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
     if UG == 'F':
@@ -815,6 +874,9 @@ def main():
 
     ax_psdE2.set_ylabel('PSD parameter')
     ax_psdE2.set_xlabel('ADC Channel')
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_PSDvsE_Gates.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_PSDvsE_Gates.png", format='png')
     plt.show()
 
     # Focus on the B cut region
@@ -839,6 +901,9 @@ def main():
    # ax_filtEA.set_yscale('log')
     plt.ylim([0,2500])
     plt.xlim(0,4095)
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_AlphaGate.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_AlphaGate.png", format='png')
     plt.show()
 
     # Plots the filtered energy data for cut B
@@ -994,9 +1059,12 @@ def main():
 
     #plt.xlim(750,3000) # With F UG
     plt.xlim(0,4095) # With F UG and optical grease
-    plt.ylim(0,4000)
+    plt.ylim(0,2500)
     fitax.set_xlabel('ADC Channel')
     fitax.set_ylabel('Counts')
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.png", format='png')
     plt.show()
 
     # Calculates the integral
@@ -1043,165 +1111,177 @@ def main():
     print("Events at ~ 700 peak between 550 and 950 ", fourth_decay, " % of Bi-212 alpha decays: ", fourth_decay/first_second_decay)
     print("Events at ~ 1200 peak between 950 and 1400 ", third_decay, " % of Bi-212 alpha decays: ", third_decay/first_second_decay)
 
-    # Fit a quadruple Gaussian at low energy with a low constant bkg
-    p0quad = [40, 400, 200, 40, 750, 200, 40, 1100, 200, 2000, 1900, 200]
-    p0five = [500, 100, 100, 40, 400, 100, 40, 750, 100, 40, 1100, 100, 2000, 1900, 200]
+    # Writes the data from the alpha PSD region to a file
+    f = open('Pb212_AlphaEvents_08122024.txt', 'w')
+    f.write('Pb212 alpha event data from 08-12-2024, bincenters (x) in ADC channels, counts (y)\n')
+    f = open('Pb212_AlphaEvents_08122024.txt', 'a')
+    for i in range(len(bincenters)):
+        f.write(str(bincenters[i]))
+        f.write('\t')
+        f.write(str(data_entries[i]))
+        f.write('\n')
 
-    # Five peak, no betas, high E alpha
-    p0five = [60, 400, 50, 40, 750, 100, 40, 1100, 100, 7000, 1900, 300, 2000, 3400, 300]
+    f.close()
 
-    p0six = [500, 100, 100, 40, 400, 100, 40, 750, 100, 40, 1100, 100, 2000, 1900, 300, 2000, 3400, 300]
-
-    # Six peak no betas
-    p0six = [60, 400, 100, 40, 750, 100, 40, 1100, 100, 7000, 1900, 300, 600, 2400, 300, 2000, 3400, 300]
-
-    p0seven = [500, 100, 100, 40, 400, 100, 40, 750, 100, 40, 1100, 100, 2000, 1900, 300, 600, 2000, 300, 2000, 3400, 300]
-
-    quad_low = 300
-    quad_high = 4090
-    # Get points for each bin center
-    xpeak_quad = bincenters[bincenters>quad_low]
-    x_quad = xpeak_quad[xpeak_quad<quad_high]
-    x_quad = x_quad.ravel()
-
-    y_quad = data_entries[bincenters>quad_low]
-    y_quad = y_quad[xpeak_quad<quad_high]
-    y_quad = y_quad.ravel()
-
-    #E_param_quad, E_cov_quad = curve_fit(QuadGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0quad, bounds=((0, quad_low, -250, 0, 700, -250, 0, 1000, -250, 0, 1000, -np.inf),(200, 500, 200, 250, 800, 200, 250, 1200, 250, np.inf, 2500, np.inf)), maxfev = 10000)
-    #E_param_quad, E_cov_quad = curve_fit(FiveGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0five, bounds=((0, quad_low, -250, 0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf),(1000, 200, 250, 200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf)), maxfev = 10000)
-
-    # Five peak, no betas, high E alpha
-    E_param_quad, E_cov_quad = curve_fit(FiveGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0five, bounds=((0, 390, -75, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0, 3000, -np.inf),(200, 500, 75, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
-
-    #E_param_quad, E_cov_quad = curve_fit(SixGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0six, bounds=((0, quad_low, -250, 0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0, 3000, -np.inf),(1000, 200, 250, 200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
-
-    # Six peak no betas
-    #E_param_quad, E_cov_quad = curve_fit(SixGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0six, bounds=((0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0,1000, -np.inf, 0, 3000, -np.inf),(200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
-
-    #E_param_quad, E_cov_quad = curve_fit(SevenGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0seven, bounds=((0, quad_low, -250, 0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0,1000, -np.inf, 0, 3000, -np.inf),(1000, 200, 250, 200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
-
-
-    E_err_quad = np.sqrt(np.diag(E_cov_quad))
-
-    xspace_quad = np.linspace(quad_low, quad_high, 4000)
-
-
-    # Plots the hitogram and fitted function
-    fitplt_quad, fitax_quad = plt.subplots(layout = 'constrained')
-    fitax_quad.hist(energy_filtA, bins=nbins, range = [0,4095])
-    #fitax_quad.plot(xspace_quad, QuadGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
-    fitax_quad.plot(xspace_quad, FiveGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
-    #fitax_quad.plot(xspace_quad, SixGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
-    #fitax_quad.plot(xspace_quad, SevenGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
-    fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[0], E_param_quad[1], E_param_quad[2]), linewidth = 2.5)
-    fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[3], E_param_quad[4], E_param_quad[5]), linewidth = 2.5)
-    fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[6], E_param_quad[7], E_param_quad[8]), linewidth = 2.5)
-    fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[9], E_param_quad[10], E_param_quad[11]), linewidth = 2.5)
-    fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[12], E_param_quad[13], E_param_quad[14]), linewidth = 2.5)
-    #fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[15], E_param_quad[16], E_param_quad[17]), linewidth = 2.5)
-    #fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[18], E_param_quad[19], E_param_quad[20]), linewidth = 2.5)
-    #fitax_quad.set_yscale('log')
-    plt.ylim([0,500])
-    #plt.ylim([1,8000])
-    plt.show()
-
-    # Integrate and correct for bin width
-    GInt1, GIntErr1 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[0], E_param_quad[1], E_param_quad[2]))
-    GInt2, GIntErr2 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[3], E_param_quad[4], E_param_quad[5]))
-    GInt3, GIntErr3 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[6], E_param_quad[7], E_param_quad[8]))
-    GInt4, GIntErr4 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[9], E_param_quad[10], E_param_quad[11]))
-    GInt5, GIntErr5 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[12], E_param_quad[13], E_param_quad[14]))
-
-    # Correct integrals for bin width
-    GInt1 = GInt1/binwidth
-    GInt2 = GInt2/binwidth
-    GInt3 = GInt3/binwidth
-    GInt4 = GInt4/binwidth
-    GInt5 = GInt5/binwidth
-
-    # Use counting statistics for the uncertainty: ~ sqrt(num counts)
-    GIntErr1 = np.sqrt(GInt1)
-    GIntErr2 = np.sqrt(GInt2)
-    GIntErr3 = np.sqrt(GInt3)
-    GIntErr4 = np.sqrt(GInt4)
-    GIntErr5 = np.sqrt(GInt5)
-
-    print("The low energy quad fit parameters are:")
-    print("Amplitude 1: ", E_param_quad[0], " +/-", E_err_quad[0], " Counts")
-    print("Mean 1: ", E_param_quad[1], " +/-", E_err_quad[1], " ADC Channel")
-    print("Stdev 1: ", E_param_quad[2], " +/-", E_err_quad[2], " ADC Channel")
-    #print("Integral 1: ", GInt1, " +/-", GIntErr1, " Counts")
-    print("Amplitude 2: ", E_param_quad[3], " +/-", E_err_quad[3], "Counts")
-    print(" Mean 2: ", E_param_quad[4], " +/-", E_err_quad[4], "ADC Channel")
-    print(" Stdev 2: ", E_param_quad[5], " +/-", E_err_quad[5], " ADC Channel")
-    #print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
-    print("Amplitude 3: ", E_param_quad[6], " +/-", E_err_quad[6], " Counts")
-    print("Mean 3: ", E_param_quad[7], " +/-", E_err_quad[7], " ADC Channel")
-    print("Stdev 3: ", E_param_quad[8], " +/-", E_err_quad[8], " ADC Channel")
-    print("Amplitude 4: ", E_param_quad[9], " +/-", E_err_quad[9], " Counts")
-    print("Mean 4: ", E_param_quad[10], " +/-", E_err_quad[10], " ADC Channel")
-    print("Stdev 4: ", E_param_quad[1], " +/-", E_err_quad[11], " ADC Channel")
-    print("Amplitude 5: ", E_param_quad[12], " +/-", E_err_quad[12], " Counts")
-    print("Mean 5: ", E_param_quad[13], " +/-", E_err_quad[13], " ADC Channel")
-    print("Stdev 5: ", E_param_quad[14], " +/-", E_err_quad[14], " ADC Channel")
-    #print("Amplitude 6: ", E_param_quad[15], " +/-", E_err_quad[15], " Counts")
-    #print("Mean 6: ", E_param_quad[16], " +/-", E_err_quad[16], " ADC Channel")
-    #print("Stdev 6: ", E_param_quad[17], " +/-", E_err_quad[17], " ADC Channel")
-    #print("Background: ", E_param_quad[21], " +/-", E_err_quad[21], " Counts")
-
-    print("1st peak alpha counts: ", GInt1, " % normalized to combined peak: ", GInt1/GInt4)
-    print("2nd peak alpha counts: ", GInt2, " % normalized to combined peak: ", GInt2/GInt4)
-    print("3rd peak alpha counts: ", GInt3, " % normalized to combined peak: ", GInt3/GInt4)
-
-    # Gating on the three low energy peaks and looking at the waveforms
-    if wavesdat is True:
-        tracesind_filtA_p1 = []
-        tracesind_filtA_p2 = []
-        tracesind_filtA_p3 = []
-
-        for i in range(len(tracesind_filtA)):
-            if energy_nocosmic[tracesind_filtA[i]] > 300 and energy_nocosmic[tracesind_filtA[i]] < 475:
-                tracesind_filtA_p1.append(tracesind_filtA[i])
-            if energy_nocosmic[tracesind_filtA[i]] > 650 and energy_nocosmic[tracesind_filtA[i]] < 850:
-                tracesind_filtA_p2.append(tracesind_filtA[i])
-            if energy_nocosmic[tracesind_filtA[i]] > 1050 and energy_nocosmic[tracesind_filtA[i]] < 1250:
-                tracesind_filtA_p3.append(tracesind_filtA[i])
-
-        # Plot the three different region's waveforms
-        ftr_A_p1, axtr_A_p1 = plt.subplots(layout='constrained')
-        for i in range(10):
-            axtr_A_p1.plot(wavetime + i*50, traces_nocosmic[tracesind_filtA_p1[i]], label=' trace')
-        axtr_A_p1.set_title('Traces in Cut A, Peak 1')
-        axtr_A_p1.set_ylabel('Voltage')
-        yStart = 9000
-        yEnd = 14000
-        axtr_A_p1.set_xlabel('Time (ns)')
-        axtr_A_p1.set_xlim([50, 400])
-        axtr_A_p1.set_ylim([12500, 13200])
-        plt.show(block=True)  # Don't block terminal by default.
-
-        # Plot the three different region's waveforms
-        ftr_A_p2, axtr_A_p2 = plt.subplots(layout='constrained')
-        for i in range(10):
-            axtr_A_p2.plot(wavetime, traces_nocosmic[tracesind_filtA_p2[i]], label=' trace')
-        axtr_A_p2.set_title('Traces in Cut A, Peak 2')
-        axtr_A_p2.set_ylabel('Voltage')
-        axtr_A_p2.set_xlabel('Time (ns)')
-        axtr_A_p2.set_xlim([xStart, 200])
-        axtr_A_p2.set_ylim([11000, yEnd])
-        plt.show(block=True)  # Don't block terminal by default.
-
-        # Plot the three different region's waveforms
-        ftr_A_p3, axtr_A_p3 = plt.subplots(layout='constrained')
-        for i in range(10):
-            axtr_A_p3.plot(wavetime, traces_nocosmic[tracesind_filtA_p3[i]], label=' trace')
-        axtr_A_p3.set_title('Traces in Cut A, Peak 3')
-        axtr_A_p3.set_ylabel('Voltage')
-        axtr_A_p3.set_xlabel('Time (ns)')
-        axtr_A_p3.set_xlim([xStart, 200])
-        axtr_A_p3.set_ylim([11000, yEnd])
-        plt.show(block=True)  # Don't block terminal by default.
+    # # Fit a quadruple Gaussian at low energy with a low constant bkg
+    # p0quad = [40, 400, 200, 40, 750, 200, 40, 1100, 200, 2000, 1900, 200]
+    # p0five = [500, 100, 100, 40, 400, 100, 40, 750, 100, 40, 1100, 100, 2000, 1900, 200]
+    #
+    # # Five peak, no betas, high E alpha
+    # p0five = [60, 400, 50, 40, 750, 100, 40, 1100, 100, 7000, 1900, 300, 2000, 3400, 300]
+    #
+    # p0six = [500, 100, 100, 40, 400, 100, 40, 750, 100, 40, 1100, 100, 2000, 1900, 300, 2000, 3400, 300]
+    #
+    # # Six peak no betas
+    # p0six = [60, 400, 100, 40, 750, 100, 40, 1100, 100, 7000, 1900, 300, 600, 2400, 300, 2000, 3400, 300]
+    #
+    # p0seven = [500, 100, 100, 40, 400, 100, 40, 750, 100, 40, 1100, 100, 2000, 1900, 300, 600, 2000, 300, 2000, 3400, 300]
+    #
+    # quad_low = 300
+    # quad_high = 4090
+    # # Get points for each bin center
+    # xpeak_quad = bincenters[bincenters>quad_low]
+    # x_quad = xpeak_quad[xpeak_quad<quad_high]
+    # x_quad = x_quad.ravel()
+    #
+    # y_quad = data_entries[bincenters>quad_low]
+    # y_quad = y_quad[xpeak_quad<quad_high]
+    # y_quad = y_quad.ravel()
+    #
+    # #E_param_quad, E_cov_quad = curve_fit(QuadGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0quad, bounds=((0, quad_low, -250, 0, 700, -250, 0, 1000, -250, 0, 1000, -np.inf),(200, 500, 200, 250, 800, 200, 250, 1200, 250, np.inf, 2500, np.inf)), maxfev = 10000)
+    # #E_param_quad, E_cov_quad = curve_fit(FiveGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0five, bounds=((0, quad_low, -250, 0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf),(1000, 200, 250, 200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf)), maxfev = 10000)
+    #
+    # # Five peak, no betas, high E alpha
+    # E_param_quad, E_cov_quad = curve_fit(FiveGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0five, bounds=((0, 390, -75, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0, 3000, -np.inf),(200, 500, 75, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
+    #
+    # #E_param_quad, E_cov_quad = curve_fit(SixGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0six, bounds=((0, quad_low, -250, 0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0, 3000, -np.inf),(1000, 200, 250, 200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
+    #
+    # # Six peak no betas
+    # #E_param_quad, E_cov_quad = curve_fit(SixGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0six, bounds=((0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0,1000, -np.inf, 0, 3000, -np.inf),(200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
+    #
+    # #E_param_quad, E_cov_quad = curve_fit(SevenGaussFit, xdata = x_quad, ydata = y_quad, p0 = p0seven, bounds=((0, quad_low, -250, 0, 390, -100, 0, 700, -100, 0, 1000, -100, 0, 1000, -np.inf, 0,1000, -np.inf, 0, 3000, -np.inf),(1000, 200, 250, 200, 500, 100, 250, 800, 100, 250, 1200, 100, np.inf, 2500, np.inf, np.inf, 2500, np.inf, np.inf, 4000, np.inf)), maxfev = 10000)
+    #
+    #
+    # E_err_quad = np.sqrt(np.diag(E_cov_quad))
+    #
+    # xspace_quad = np.linspace(quad_low, quad_high, 4000)
+    #
+    #
+    # # Plots the hitogram and fitted function
+    # fitplt_quad, fitax_quad = plt.subplots(layout = 'constrained')
+    # fitax_quad.hist(energy_filtA, bins=nbins, range = [0,4095])
+    # #fitax_quad.plot(xspace_quad, QuadGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
+    # fitax_quad.plot(xspace_quad, FiveGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
+    # #fitax_quad.plot(xspace_quad, SixGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
+    # #fitax_quad.plot(xspace_quad, SevenGaussFit(xspace_quad, *E_param_quad), linewidth = 2.5)
+    # fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[0], E_param_quad[1], E_param_quad[2]), linewidth = 2.5)
+    # fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[3], E_param_quad[4], E_param_quad[5]), linewidth = 2.5)
+    # fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[6], E_param_quad[7], E_param_quad[8]), linewidth = 2.5)
+    # fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[9], E_param_quad[10], E_param_quad[11]), linewidth = 2.5)
+    # fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[12], E_param_quad[13], E_param_quad[14]), linewidth = 2.5)
+    # #fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[15], E_param_quad[16], E_param_quad[17]), linewidth = 2.5)
+    # #fitax_quad.plot(xspace_quad, GaussFit(xspace_quad, E_param_quad[18], E_param_quad[19], E_param_quad[20]), linewidth = 2.5)
+    # #fitax_quad.set_yscale('log')
+    # plt.ylim([0,500])
+    # #plt.ylim([1,8000])
+    # plt.show()
+    #
+    # # Integrate and correct for bin width
+    # GInt1, GIntErr1 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[0], E_param_quad[1], E_param_quad[2]))
+    # GInt2, GIntErr2 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[3], E_param_quad[4], E_param_quad[5]))
+    # GInt3, GIntErr3 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[6], E_param_quad[7], E_param_quad[8]))
+    # GInt4, GIntErr4 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[9], E_param_quad[10], E_param_quad[11]))
+    # GInt5, GIntErr5 = quad(GaussFit,quad_low, quad_high, args=(E_param_quad[12], E_param_quad[13], E_param_quad[14]))
+    #
+    # # Correct integrals for bin width
+    # GInt1 = GInt1/binwidth
+    # GInt2 = GInt2/binwidth
+    # GInt3 = GInt3/binwidth
+    # GInt4 = GInt4/binwidth
+    # GInt5 = GInt5/binwidth
+    #
+    # # Use counting statistics for the uncertainty: ~ sqrt(num counts)
+    # GIntErr1 = np.sqrt(GInt1)
+    # GIntErr2 = np.sqrt(GInt2)
+    # GIntErr3 = np.sqrt(GInt3)
+    # GIntErr4 = np.sqrt(GInt4)
+    # GIntErr5 = np.sqrt(GInt5)
+    #
+    # print("The low energy quad fit parameters are:")
+    # print("Amplitude 1: ", E_param_quad[0], " +/-", E_err_quad[0], " Counts")
+    # print("Mean 1: ", E_param_quad[1], " +/-", E_err_quad[1], " ADC Channel")
+    # print("Stdev 1: ", E_param_quad[2], " +/-", E_err_quad[2], " ADC Channel")
+    # #print("Integral 1: ", GInt1, " +/-", GIntErr1, " Counts")
+    # print("Amplitude 2: ", E_param_quad[3], " +/-", E_err_quad[3], "Counts")
+    # print(" Mean 2: ", E_param_quad[4], " +/-", E_err_quad[4], "ADC Channel")
+    # print(" Stdev 2: ", E_param_quad[5], " +/-", E_err_quad[5], " ADC Channel")
+    # #print("Integral 2: ", GInt2, " +/-", GIntErr2, " Counts")
+    # print("Amplitude 3: ", E_param_quad[6], " +/-", E_err_quad[6], " Counts")
+    # print("Mean 3: ", E_param_quad[7], " +/-", E_err_quad[7], " ADC Channel")
+    # print("Stdev 3: ", E_param_quad[8], " +/-", E_err_quad[8], " ADC Channel")
+    # print("Amplitude 4: ", E_param_quad[9], " +/-", E_err_quad[9], " Counts")
+    # print("Mean 4: ", E_param_quad[10], " +/-", E_err_quad[10], " ADC Channel")
+    # print("Stdev 4: ", E_param_quad[1], " +/-", E_err_quad[11], " ADC Channel")
+    # print("Amplitude 5: ", E_param_quad[12], " +/-", E_err_quad[12], " Counts")
+    # print("Mean 5: ", E_param_quad[13], " +/-", E_err_quad[13], " ADC Channel")
+    # print("Stdev 5: ", E_param_quad[14], " +/-", E_err_quad[14], " ADC Channel")
+    # #print("Amplitude 6: ", E_param_quad[15], " +/-", E_err_quad[15], " Counts")
+    # #print("Mean 6: ", E_param_quad[16], " +/-", E_err_quad[16], " ADC Channel")
+    # #print("Stdev 6: ", E_param_quad[17], " +/-", E_err_quad[17], " ADC Channel")
+    # #print("Background: ", E_param_quad[21], " +/-", E_err_quad[21], " Counts")
+    #
+    # print("1st peak alpha counts: ", GInt1, " % normalized to combined peak: ", GInt1/GInt4)
+    # print("2nd peak alpha counts: ", GInt2, " % normalized to combined peak: ", GInt2/GInt4)
+    # print("3rd peak alpha counts: ", GInt3, " % normalized to combined peak: ", GInt3/GInt4)
+    #
+    # # Gating on the three low energy peaks and looking at the waveforms
+    # if wavesdat is True:
+    #     tracesind_filtA_p1 = []
+    #     tracesind_filtA_p2 = []
+    #     tracesind_filtA_p3 = []
+    #
+    #     for i in range(len(tracesind_filtA)):
+    #         if energy_nocosmic[tracesind_filtA[i]] > 300 and energy_nocosmic[tracesind_filtA[i]] < 475:
+    #             tracesind_filtA_p1.append(tracesind_filtA[i])
+    #         if energy_nocosmic[tracesind_filtA[i]] > 650 and energy_nocosmic[tracesind_filtA[i]] < 850:
+    #             tracesind_filtA_p2.append(tracesind_filtA[i])
+    #         if energy_nocosmic[tracesind_filtA[i]] > 1050 and energy_nocosmic[tracesind_filtA[i]] < 1250:
+    #             tracesind_filtA_p3.append(tracesind_filtA[i])
+    #
+    #     # Plot the three different region's waveforms
+    #     ftr_A_p1, axtr_A_p1 = plt.subplots(layout='constrained')
+    #     for i in range(10):
+    #         axtr_A_p1.plot(wavetime + i*50, traces_nocosmic[tracesind_filtA_p1[i]], label=' trace')
+    #     axtr_A_p1.set_title('Traces in Cut A, Peak 1')
+    #     axtr_A_p1.set_ylabel('Voltage')
+    #     yStart = 9000
+    #     yEnd = 14000
+    #     axtr_A_p1.set_xlabel('Time (ns)')
+    #     axtr_A_p1.set_xlim([50, 400])
+    #     axtr_A_p1.set_ylim([12500, 13200])
+    #     plt.show(block=True)  # Don't block terminal by default.
+    #
+    #     # Plot the three different region's waveforms
+    #     ftr_A_p2, axtr_A_p2 = plt.subplots(layout='constrained')
+    #     for i in range(10):
+    #         axtr_A_p2.plot(wavetime, traces_nocosmic[tracesind_filtA_p2[i]], label=' trace')
+    #     axtr_A_p2.set_title('Traces in Cut A, Peak 2')
+    #     axtr_A_p2.set_ylabel('Voltage')
+    #     axtr_A_p2.set_xlabel('Time (ns)')
+    #     axtr_A_p2.set_xlim([xStart, 200])
+    #     axtr_A_p2.set_ylim([11000, yEnd])
+    #     plt.show(block=True)  # Don't block terminal by default.
+    #
+    #     # Plot the three different region's waveforms
+    #     ftr_A_p3, axtr_A_p3 = plt.subplots(layout='constrained')
+    #     for i in range(10):
+    #         axtr_A_p3.plot(wavetime, traces_nocosmic[tracesind_filtA_p3[i]], label=' trace')
+    #     axtr_A_p3.set_title('Traces in Cut A, Peak 3')
+    #     axtr_A_p3.set_ylabel('Voltage')
+    #     axtr_A_p3.set_xlabel('Time (ns)')
+    #     axtr_A_p3.set_xlim([xStart, 200])
+    #     axtr_A_p3.set_ylim([11000, yEnd])
+    #     plt.show(block=True)  # Don't block terminal by default.
 
 
 

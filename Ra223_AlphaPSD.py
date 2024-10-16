@@ -200,7 +200,7 @@ def main():
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"/Users/jphillips409/Documents/ThorekPb212/Ra223")
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ra223")
 
     #data_file = r'DataR_WF_Ra223_Ar_2024_06_21a_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_22a_t60_Uf.csv'
@@ -210,8 +210,17 @@ def main():
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_28a_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_28b_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_07_10a_t180_Uf.csv'
-    data_file = r'SDataR_WF_Ra223_Ar_2024_07_12a_t240_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_07_12a_t240_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_07_14a_t300_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_2a_t1200_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_5a_t1200_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_6a_t1200_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_07a_t1800_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_09a_t1800_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_12a_t1800_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_13a_t1800_Uf.csv'
+    data_file = r'SDataR_WF_Ra223_Ar_2024_08_14a_t1800_Uf.csv'
+
 
 
     # Now joins the path and file
@@ -237,8 +246,8 @@ def main():
     # Unpacks the data, choose alldat to True if you want to read all the file
     # Set wavesdat to True if you want the waveforms
     # Truncated version is set to 10000 events
-    alldat = True
-    wavesdat = False
+    alldat = False
+    wavesdat = True
     data = Unpack(file_to_open, alldat, wavesdat)
 
     # Choose what type of Ultima Gold you are using
@@ -537,7 +546,7 @@ def main():
 
     # Using Ultima Gold AB + F
     if UG == 'F': PSDlowA = 0.21
-    if UG == 'F': PSDhighA = 0.4
+    if UG == 'F': PSDhighA = 0.37
 
     energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
     print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
@@ -595,14 +604,15 @@ def main():
     if wavesdat is True:
         ftr_A, axtr_A = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
-        for i in range(10):
-            axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace')
-        axtr_A.set_title('Traces in Cut A')
-        axtr_A.set_ylabel('Voltage')
+        #for i in range(10):
+            #axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace')
+        axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[1]], label=' trace')
+        #axtr_A.set_title('Traces in Cut A')
+        axtr_A.set_ylabel('Voltage (mV)')
         yStart = 9000
         yEnd = 14000
         axtr_A.set_xlabel('Time (ns)')
-        axtr_A.set_xlim([xStart, xEnd * 2])
+        axtr_A.set_xlim([75, 175])
         axtr_A.set_ylim([8000, yEnd])
         plt.show(block=True)  # Don't block terminal by default.
 
@@ -715,7 +725,7 @@ def main():
     ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
-    ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
+    #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
     plt.ylim([0, 1])
     plt.xlim([0,4095])
 
@@ -933,10 +943,10 @@ def main():
     p0quad = ([2000, 1200, 200, 2000, 1400, 200, 2000, 1600, 200, 2000, 1750, 200, 20])
 
     # if using optical grease
-    p0quad = ([2000, 1700, 200, 2000, 2000, 200, 2000, 2100, 200, 2000, 2600, 200, 20])
+    p0quad = ([2000, 1500, 200, 2000, 1700, 200, 2000, 2000, 200, 2000, 2400, 200, 20])
 
 
-    E_param_quad, Ecov_quad = curve_fit(QuadGaussFit, xdata = x, ydata = y, p0 = p0quad, bounds=((0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0),(np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf)), maxfev = 100000)
+    E_param_quad, Ecov_quad = curve_fit(QuadGaussFit, xdata = x, ydata = y, p0 = p0quad, bounds=((0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0,-np.inf,-np.inf,0),(np.inf,1800,np.inf,np.inf,1800,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf)), maxfev = 100000)
     E_err_quad = np.sqrt(np.diag(Ecov_quad))
 
     fitplt_quad, fitax_quad = plt.subplots(layout='constrained')

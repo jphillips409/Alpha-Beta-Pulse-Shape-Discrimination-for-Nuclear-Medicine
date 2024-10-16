@@ -52,6 +52,10 @@ def LnCurve(x, t):
 
     return t*x
 
+def MixedLnCurve(x, t1, t2):
+
+    return LnCurve(x, t1) + LnCurve(x, t2)
+
 def main():
 
     # Pb212 array for days since sample creation
@@ -65,6 +69,11 @@ def main():
     Pb212_LN = np.log(Pb212_CPS/Pb212_CPS[0])
     Pb212_LN = np.array(Pb212_LN)
     Pb212_LN_err = np.abs((Pb212_CPSunc/Pb212_CPS)*Pb212_LN)
+
+    # Literature Pb212 half-life
+    Pb212_t1half_lit = 10.628 # hours
+    Pb212_halflives = (Pb212_days * 24)/Pb212_t1half_lit
+    Pb212_halflives = np.array(Pb212_halflives)
 
     paramPb = [-0.01]
 
@@ -80,9 +89,28 @@ def main():
     fitaxPb.set_ylabel('Ln(CPS/CPS$_{0}$)')
 
     fitaxPb.legend(loc='upper right')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.eps", format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.png", format='png')
     fitpltPb.show()
 
-    print("The Pb-212 half-life is ", 24*np.log(2)/np.abs(fit_paramPb[0]), " hours")
+    Pb212_err = np.sqrt(np.diag(fit_covPb))
+
+    print("The Pb-212 half-life is ", 24*np.log(2)/np.abs(fit_paramPb[0]), " +/- ", np.abs((Pb212_err[0]/fit_paramPb[0])*24*np.log(2)/np.abs(fit_paramPb[0]))," hours")
+
+    fit_paramPb_hl, fit_covPb_hl = curve_fit(LnCurve, xdata = Pb212_halflives, ydata = Pb212_LN, maxfev = 100000)
+    print(fit_paramPb_hl)
+    # Plot the Pb-212 as a function of half-lives
+    xspace = np.linspace(0,Pb212_halflives[-1], 100)
+    fitpltPb_hl, fitaxPb_hl = plt.subplots(layout = 'constrained')
+    fitaxPb_hl.scatter(Pb212_halflives, Pb212_LN, linewidth = 2.5, label='$^{212}$Pb Data', color='black')
+    fitaxPb_hl.plot(xspace,LnCurve(xspace,*fit_paramPb_hl), label='Linear Fit', color='red', linestyle='dashed')
+    fitaxPb_hl.errorbar(Pb212_halflives, Pb212_LN, yerr=Pb212_LN_err, color='black', ls='none',  capsize=3, capthick=1, ecolor='black')
+    fitaxPb_hl.set_xlabel('Half-Lives Since First Sample')
+    fitaxPb_hl.set_ylabel('Ln(CPS/CPS$_{0}$)')
+    fitaxPb_hl.legend(loc='upper right')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve_HalfLife.eps", format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve_HalfLife.png", format='png')
+    fitpltPb_hl.show()
 
 
     # Ac225 array for days since sample creation, CPS, and CPS uncertainty
@@ -102,14 +130,104 @@ def main():
     xspace = np.linspace(0,6, 100)
 
     fitpltAc, fitaxAc = plt.subplots(layout = 'constrained')
-    fitaxAc.scatter(Ac225_days, Ac225_LN, linewidth = 2.5, label='$^{225}$Ac Data', color='blue')
-    fitaxAc.plot(xspace,LnCurve(xspace,*fit_paramAc), color='blue', label='Decay Curve', linestyle='dashed')
+    fitaxAc.scatter(Ac225_days, Ac225_LN, linewidth = 2.5, label='$^{225}$Ac Data', color='black')
+    fitaxAc.plot(xspace,LnCurve(xspace,*fit_paramAc), color='red', label='Decay Curve', linestyle='dashed')
     fitaxAc.set_xlabel('Time Since First Sample (Days)')
     fitaxAc.set_ylabel('Ln(CPS/CPS$_{0}$)')
 
     fitaxAc.legend(loc='upper right')
     fitpltAc.show()
 
-    print("The Ac-225 half-life is ", np.log(2)/np.abs(fit_paramAc[0]), " days")
+    Ac225_err = np.sqrt(np.diag(fit_covAc))
+
+    print("The Ac-225 half-life is ", np.log(2)/np.abs(fit_paramAc[0]), " +/- ", np.abs((Ac225_err[0]/fit_paramAc[0])*np.log(2)/np.abs(fit_paramAc[0]))," days")
+
+    # Ra223 array for days since sample creation, CPS, and CPS uncertainty
+    # Starts with first greased sample
+    Ra223_days = [0, 0.899305556, 12.90833333, 15.22638889, 17.13819444, 35.94166667, 38.92986111, 39.97013889, 41.03819444, 43.13125, 46.11527778, 47.05902778]
+    Ra223_days = np.array(Ra223_days)
+    Ra223_CPS = [5330.683333, 5001.7, 2346.461111, 2020.6625, 1804.023333, 575.5833333, 477.8525, 449.2225, 419.6005556, 370.3883333, 312.8411111, 294.9183333]
+    Ra223_CPS = np.array(Ra223_CPS)
+    Ra223_CPSunc = [9.106728282, 9.030350061, 3.541242894, 2.865436994, 2.426687271, 0.691262432, 0.631039156, 0.017662391, 0.011380085, 0.010691931, 0.009826286, 0.009540659]
+    Ra223_CPSunc = np.array(Ra223_CPSunc)
+
+    Ra223_LN = np.log(Ra223_CPS/Ra223_CPS[0])
+    Ra223_LN_err = np.abs((Ra223_CPSunc/Ra223_CPS)*Ra223_LN)
+
+    paramRa = [-0.01]
+
+    Ra223_thalf_lit = 11.4352 # days
+    Ra223_thalf_lit_eq = -np.log(2)/Ra223_thalf_lit
+
+    fit_paramRa, fit_covRa = curve_fit(LnCurve, xdata = Ra223_days, ydata = Ra223_LN, maxfev = 100000)
+
+    xspace = np.linspace(0,Ra223_days[-1]+2, 100)
+
+    fitpltRa, fitaxRa = plt.subplots(layout = 'constrained')
+    fitaxRa.scatter(Ra223_days, Ra223_LN, linewidth = 2.5, label='$^{223}$Ra Data', color='black')
+    fitaxRa.plot(xspace,LnCurve(xspace,*fit_paramRa), color='red', label='Decay Curve', linestyle='dashed')
+    fitaxRa.plot(xspace,Ra223_thalf_lit_eq*xspace, color='blue', label='Literature Decay Curve', linestyle='dashed')
+    fitaxRa.errorbar(Ra223_days, Ra223_LN, yerr=Ra223_LN_err, color='black', ls='none',  capsize=3, capthick=1, ecolor='black')
+    fitaxRa.set_xlabel('Time Since First Sample (Days)')
+    fitaxRa.set_ylabel('Ln(CPS/CPS$_{0}$)')
+
+    fitpltRa.legend(loc='upper right')
+    fitpltRa.show()
+
+    Ra223_err = np.sqrt(np.diag(fit_covRa))
+
+    print("The Ra-223 half-life is ", np.log(2)/np.abs(fit_paramRa[0]), " +/- ", np.abs((Ra223_err[0]/fit_paramRa[0])*np.log(2)/np.abs(fit_paramRa[0]))," days")
+
+    # Ra223 array for days since sample creation, CPS, and CPS uncertainty
+    # Starts with greased sample on 8/5/24
+    Ra223_days = [0, 1.040277778, 2.108333333, 4.201388889, 7.185416667, 8.129166667]
+    Ra223_days = np.array(Ra223_days)
+    Ra223_CPS = [477.8525, 449.2225, 419.6005556, 370.3883333, 312.8411111, 294.9183333]
+    Ra223_CPS = np.array(Ra223_CPS)
+    Ra223_CPSunc = [0.631039156, 0.017662391, 0.011380085, 0.010691931, 0.009826286, 0.009540659]
+    Ra223_CPSunc = np.array(Ra223_CPSunc)
+
+    Ra223_LN = np.log(Ra223_CPS / Ra223_CPS[0])
+    Ra223_LN_err = np.abs((Ra223_CPSunc / Ra223_CPS) * Ra223_LN)
+
+    paramRa = [-0.01]
+
+    Ra223_thalf_lit = 11.4352  # days
+    Ra223_thalf_lit_eq = -np.log(2) / Ra223_thalf_lit
+
+    fit_paramRa, fit_covRa = curve_fit(LnCurve, xdata=Ra223_days, ydata=Ra223_LN, maxfev=100000)
+
+    xspace = np.linspace(0, Ra223_days[-1] + 2, 100)
+
+    fitpltRa, fitaxRa = plt.subplots(layout='constrained')
+    fitaxRa.scatter(Ra223_days, Ra223_LN, linewidth=2.5, label='$^{223}$Ra Data', color='black')
+    fitaxRa.plot(xspace, LnCurve(xspace, *fit_paramRa), color='red', label='Decay Curve', linestyle='dashed')
+    fitaxRa.plot(xspace, Ra223_thalf_lit_eq * xspace, color='blue', label='Literature Decay Curve', linestyle='dashed')
+    fitaxRa.errorbar(Ra223_days, Ra223_LN, yerr=Ra223_LN_err, color='black', ls='none', capsize=3, capthick=1,
+                     ecolor='black')
+    fitaxRa.set_xlabel('Time Since First Sample (Days)')
+    fitaxRa.set_ylabel('Ln(CPS/CPS$_{0}$)')
+
+    fitpltRa.legend(loc='upper right')
+    fitpltRa.show()
+
+    Ra223_err = np.sqrt(np.diag(fit_covRa))
+
+    print("The Ra-223 half-life is ", np.log(2) / np.abs(fit_paramRa[0]), " +/- ",
+          np.abs((Ra223_err[0] / fit_paramRa[0]) * np.log(2) / np.abs(fit_paramRa[0])), " days")
+
+    # Fits Ra-223 with two mixed decay curves
+    # fit_paramRa_mixed, fit_covRa_mixed = curve_fit(MixedLnCurve, xdata = Ra223_days, ydata = Ra223_LN, maxfev = 100000, bounds=((8, -np.inf, 6, -np.inf),(np.inf,0, np.inf, 0)))
+    # print(fit_paramRa_mixed)
+    # fitpltRa_mixed, fitaxRa_mixed = plt.subplots(layout = 'constrained')
+    # fitaxRa_mixed.scatter(Ra223_days, Ra223_LN, linewidth = 2.5, label='$^{223}$Ra Data', color='black')
+    # fitaxRa_mixed.plot(xspace,MixedLnCurve(xspace,*fit_paramRa_mixed), color='red', label='Decay Curve', linestyle='dashed')
+    # fitaxRa_mixed.plot(xspace,LnCurve(xspace,fit_paramRa_mixed[0],fit_paramRa_mixed[1]), color='blue', label='t1', linestyle='dashed')
+    # fitaxRa_mixed.plot(xspace,LnCurve(xspace,fit_paramRa_mixed[2],fit_paramRa_mixed[3]), color='green', label='t2', linestyle='dashed')
+    # fitaxRa_mixed.set_xlabel('Time Since First Sample (Days)')
+    # fitaxRa_mixed.set_ylabel('Ln(CPS/CPS$_{0}$)')
+    #
+    # fitpltRa_mixed.legend(loc='upper right')
+    # fitpltRa_mixed.show()
 
 main()

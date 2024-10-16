@@ -171,7 +171,7 @@ def main():
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"/Users/jphillips409/Documents/ThorekPb212/Ac225")
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ac225")
 
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_21a_t60_Uf.csv'
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_06_22a_t60_Uf.csv'
@@ -181,6 +181,8 @@ def main():
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_01a_t60_Uf.csv'
     #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_01b_t60_Uf.csv'
     data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_07_12a_t240_Uf.csv'
+    #data_file = r'SDataR_DataR_WF_Ac225_Ar_2024_08_02a_t720_Uf.csv'
+
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -205,8 +207,8 @@ def main():
     # Unpacks the data, choose alldat to True if you want to read all the file
     # Set wavesdat to True if you want the waveforms
     # Truncated version is set to 10000 events
-    alldat = True
-    wavesdat = False
+    alldat = False
+    wavesdat = True
     data = Unpack(file_to_open, alldat, wavesdat)
 
     # Choose what type of Ultima Gold you are using
@@ -554,14 +556,15 @@ def main():
     if wavesdat is True:
         ftr_A, axtr_A = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
-        for i in range(10):
-            axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace')
-        axtr_A.set_title('Traces in Cut A')
-        axtr_A.set_ylabel('Voltage')
-        yStart = 9000
+        #for i in range(10):
+            #axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace')
+        axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[4]], label=' trace')
+       # axtr_A.set_title('Traces in Cut A')
+        axtr_A.set_ylabel('Voltage (mV)')
+        yStart = 8000
         yEnd = 14000
         axtr_A.set_xlabel('Time (ns)')
-        axtr_A.set_xlim([xStart, xEnd * 2])
+        axtr_A.set_xlim([75, 175])
         axtr_A.set_ylim([8000, yEnd])
         plt.show(block=True)  # Don't block terminal by default.
 
@@ -674,7 +677,7 @@ def main():
     ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
-    ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
+    #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
     plt.ylim([0, 1])
     plt.xlim([0,4095])
 
