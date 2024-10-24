@@ -230,4 +230,67 @@ def main():
     # fitpltRa_mixed.legend(loc='upper right')
     # fitpltRa_mixed.show()
 
+
+
+    # Pb212 in regular UG and cleared blood
+    # Pb212 array for days since sample creation
+    Pb212_CBlood_days = [0,0.705555556,1.886805556,2.681944444,3.585416667,4.567361111,5.679861111,6.567361111]
+    Pb212_CBlood_days = np.array(Pb212_CBlood_days)
+    Pb212_CBlood_CPS = [1391.991667,497.99375,78.58583333,20.91675926,4.829444444,0.99037037,0.164756944,0.045]
+    Pb212_CBlood_CPS = np.array(Pb212_CBlood_CPS)
+    Pb212_CBlood_CPSunc = [2.408311707,1.018571048,0.255906613,0.044008374,0.016379941,0.006771298,0.002391804,0.00125]
+    Pb212_CBlood_CPSunc = np.array(Pb212_CBlood_CPSunc)
+
+    Pb212_CBlood_LN = np.log(Pb212_CBlood_CPS / Pb212_CBlood_CPS[0])
+    Pb212_CBlood_LN = np.array(Pb212_CBlood_LN)
+    Pb212_CBlood_LN_err = np.abs((Pb212_CBlood_CPSunc / Pb212_CBlood_CPS) * Pb212_CBlood_LN)
+
+    # Literature Pb212 half-life
+    Pb212_CBlood_t1half_lit = 10.628  # hours
+    Pb212_CBlood_halflives = (Pb212_CBlood_days * 24) / Pb212_CBlood_t1half_lit
+    Pb212_CBlood_halflives = np.array(Pb212_CBlood_halflives)
+
+    paramPb = [-0.01]
+
+    fit_paramPb_CBlood, fit_covPb_CBlood = curve_fit(LnCurve, xdata=Pb212_CBlood_days, ydata=Pb212_CBlood_LN, maxfev=100000)
+
+    xspace = np.linspace(0,  Pb212_CBlood_days[-1], 100)
+
+    fitpltPb_CBlood, fitaxPb_CBlood = plt.subplots(layout='constrained')
+    fitaxPb_CBlood.scatter(Pb212_CBlood_days, Pb212_CBlood_LN, linewidth=2.5, label='$^{212}$Pb Data', color='black')
+    fitaxPb_CBlood.plot(xspace, LnCurve(xspace, *fit_paramPb_CBlood), label='Linear Fit', color='red', linestyle='dashed')
+    fitaxPb_CBlood.errorbar(Pb212_CBlood_days, Pb212_CBlood_LN, yerr=Pb212_CBlood_LN_err, color='black', ls='none', capsize=3, capthick=1,
+                     ecolor='black')
+    fitaxPb_CBlood.set_xlabel('Time Since First Sample (Days)')
+    fitaxPb_CBlood.set_ylabel('Ln(CPS/CPS$_{0}$)')
+
+    fitaxPb_CBlood.legend(loc='upper right')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve.eps", format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve.png", format='png')
+    fitpltPb_CBlood.show()
+
+    Pb212_CBlood_err = np.sqrt(np.diag(fit_covPb_CBlood))
+
+    print("The Pb-212 half-life is ", 24 * np.log(2) / np.abs(fit_paramPb_CBlood[0]), " +/- ",
+          np.abs((Pb212_CBlood_err[0] / fit_paramPb_CBlood[0]) * 24 * np.log(2) / np.abs(fit_paramPb_CBlood[0])), " hours")
+
+    fit_paramPb_CBlood_hl, fit_covPb_CBlood_hl = curve_fit(LnCurve, xdata=Pb212_CBlood_halflives, ydata=Pb212_CBlood_LN, maxfev=100000)
+    print(fit_paramPb_CBlood_hl)
+    # Plot the Pb-212 as a function of half-lives
+    xspace = np.linspace(0, Pb212_CBlood_halflives[-1], 100)
+    fitpltPb_CBlood_hl, fitaxPb_CBlood_hl = plt.subplots(layout='constrained')
+    fitaxPb_CBlood_hl.scatter(Pb212_CBlood_halflives, Pb212_CBlood_LN, linewidth=2.5, label='$^{212}$Pb Data', color='black')
+    fitaxPb_CBlood_hl.plot(xspace, LnCurve(xspace, *fit_paramPb_CBlood_hl), label='Linear Fit', color='red', linestyle='dashed')
+    fitaxPb_CBlood_hl.errorbar(Pb212_CBlood_halflives, Pb212_CBlood_LN, yerr=Pb212_CBlood_LN_err, color='black', ls='none', capsize=3, capthick=1,
+                        ecolor='black')
+    fitaxPb_CBlood_hl.set_xlabel('Half-Lives Since First Sample')
+    fitaxPb_CBlood_hl.set_ylabel('Ln(CPS/CPS$_{0}$)')
+    fitaxPb_CBlood_hl.legend(loc='upper right')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve_HalfLife.eps",
+                format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve_HalfLife.png",
+                format='png')
+    fitpltPb_CBlood_hl.show()
+
+
 main()

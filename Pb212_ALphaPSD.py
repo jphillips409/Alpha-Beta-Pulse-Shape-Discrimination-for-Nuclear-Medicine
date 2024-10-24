@@ -85,9 +85,19 @@ def PSDcutA(low, high, Earr, PSDarr):
 
         # For a non-straight lower PSD gate
         #if PSDarr[i] >= -0.0001166667 * Earr[i] + 0.35 and PSDarr[i] >= low and PSDarr[i] <= high:
-        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
-            Filtarr.append(Earr[i])
-            trarr.append(i)
+        #if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
+
+        # For a non straight lower PSD gate, UG with cleared blood, 30 ns SG
+        #if PSDarr[i] >= -0.00031666 * Earr[i] + 0.35 and PSDarr[i] >= low and PSDarr[i] <= high:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
+
+            # For a non straight lower PSD gate, UG with cleared blood, 24 ns SG
+            if PSDarr[i] >= -0.00028333333 * Earr[i] + 0.4 and PSDarr[i] >= low and PSDarr[i] <= high:
+                Filtarr.append(Earr[i])
+                trarr.append(i)
 
     return Filtarr, trarr
 
@@ -245,9 +255,26 @@ def main():
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_10a_t600_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_11a_t3600_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_11a_t5400_Uf.csv'
-    data_file = r'SDataR_WF_Pb212_Ar_2024_07_12a_t14400_Uf.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_07_12a_t14400_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_13a_t28800_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_14a_t28800_Uf.csv'
+
+
+    # Blood Samples after this
+    # Cleared blood sample with regular UG
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UG_Blood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_010_17a_t480_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_18b_t1200_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_19a_t10800_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_20a_t18000_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_21a_t21600_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_22a_t28800_UG_CBlood.csv'
+    data_file = r'SDataR_WF_Pb212_Ar_2024_10_23a_t28800_UG_CBlood.csv'
+
+    # Cleared blood sample with UGf
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UGf_CBlood.csv'
+
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -272,15 +299,15 @@ def main():
     # Unpacks the data, choose alldat to True if you want to read all the file
     # Set wavesdat to True if you want the waveforms
     # Truncated version is set to 10000 events
-    alldat = False
-    wavesdat = True
+    alldat = True
+    wavesdat = False
     data = Unpack(file_to_open, alldat, wavesdat)
 
     # Choose what type of Ultima Gold you are using
     #   R = Regular, AB, F = AB+F
-    #UG = 'R'
+    UG = 'R'
     #UG = 'AB'
-    UG = 'F'
+    #UG = 'F'
 
     # Array to check event type
     chantype = []
@@ -576,8 +603,12 @@ def main():
     # Sets your A PSD gate - straight lines
     # Also returns an array containing the indices for the traces
     # Using regular Ultima Gold
-    PSDlowA = 0.13
-    PSDhighA = 0.25
+    PSDlowA = 0.16
+    PSDhighA = 0.35
+
+    # Regular UG but with grease, cleared blood, and 24 ns short gate
+    PSDlowA = 0.23
+    PSDhighA = 0.4
 
     # Using AB Ultima Gold
     if UG == 'AB': PSDlowA = 0.27
@@ -830,24 +861,36 @@ def main():
     # Plots the PSD parameter vs the energy with the cut
     # Draws the straight A cuts
     xline = np.linspace(0,4096,10)
-    yline = np.linspace(0,PSDlowA,10)
-    PSDlowlineA = np.full(len(xline), PSDlowA)
+    #yline = np.linspace(0,PSDlowA,10)
+    #PSDlowlineA = np.full(len(xline), PSDlowA)
     PSDhighlineA = np.full(len(xline), PSDhighA)
 
     # For a non-straight A cut
     #xline = np.linspace(0, (PSDlowA - 0.35) / (-0.0001166667),9)
     #yline = np.full(len(xline), -0.0001166667 * xline + 0.35)
-    xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
-    yline = np.full(len(xline), -0.0001442 * xline + 0.375)
+    #xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
+    #yline = np.full(len(xline), -0.0001442 * xline + 0.375)
+    #xline = np.append(xline, 4096)
+    #PSDlowlineA = np.append(yline, PSDlowA)
+
+    # For a non-straight A cut - regular UG with clear blood - 30 ns gate
+    #xline = np.linspace(0, (PSDlowA - 0.35) / (-0.0003166667),9)
+    #yline = np.full(len(xline), -0.0003166667 * xline + 0.34)
+    #xline = np.append(xline, 4096)
+    #PSDlowlineA = np.append(yline, PSDlowA)
+
+    # For a non-straight A cut - regular UG with clear blood - 24 ns gate
+    xline = np.linspace(0, (PSDlowA - 0.4) / (-0.000283333),9)
+    yline = np.full(len(xline), -0.000283333 * xline + 0.4)
     xline = np.append(xline, 4096)
     PSDlowlineA = np.append(yline, PSDlowA)
 
     #Draws the B cut
     # For regular Ultima Gold
-   # xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
-   # PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
-   # xlineB = np.append(xlineB, 4096)
-   # PSDlineB = np.append(PSDlineB, PSDhighA)
+    xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
+    PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
+    xlineB = np.append(xlineB, 4096)
+    PSDlineB = np.append(PSDlineB, PSDhighA)
 
     # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
     if UG == 'F':
@@ -863,7 +906,7 @@ def main():
     ElineC = np.full(len(yline), 400)
 
     fig_psdE2, ax_psdE2 = plt.subplots(layout = 'constrained')
-    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
     fig_psdE2.colorbar(h2[3],ax=ax_psdE2)
     ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
@@ -899,8 +942,9 @@ def main():
     ax_filtEA.set_xlabel('ADC Channel')
     ax_filtEA.set_ylabel('Counts')
    # ax_filtEA.set_yscale('log')
-    plt.ylim([0,2500])
-    plt.xlim(0,4095)
+    plt.xlim(0,2500) # With UG and Cleared Blood
+    plt.ylim([0,50])
+    #plt.xlim(0,4095)
     if wavesdat is False:
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_AlphaGate.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_AlphaGate.png", format='png')
@@ -1057,9 +1101,10 @@ def main():
     fitax.plot(xspace2, GaussFit(xspace2, *E_param2), linewidth = 2.5, label = r'$^{212}$Po $\alpha$ fit')
     plt.legend()
 
+    plt.xlim(0,2500) # With UG and Cleared Blood
     #plt.xlim(750,3000) # With F UG
-    plt.xlim(0,4095) # With F UG and optical grease
-    plt.ylim(0,2500)
+    #plt.xlim(0,4095) # With F UG and optical grease
+    plt.ylim(0,50)
     fitax.set_xlabel('ADC Channel')
     fitax.set_ylabel('Counts')
     if wavesdat is False:
