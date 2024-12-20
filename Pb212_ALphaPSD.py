@@ -85,7 +85,7 @@ def PSDcutA(low, high, Earr, PSDarr):
 
         # For a non-straight lower PSD gate
         #if PSDarr[i] >= -0.0001166667 * Earr[i] + 0.35 and PSDarr[i] >= low and PSDarr[i] <= high:
-        #if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
+       #if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
             #Filtarr.append(Earr[i])
             #trarr.append(i)
 
@@ -95,9 +95,9 @@ def PSDcutA(low, high, Earr, PSDarr):
             #trarr.append(i)
 
             # For a non straight lower PSD gate, UG with cleared blood, 24 ns SG
-            if PSDarr[i] >= -0.00028333333 * Earr[i] + 0.4 and PSDarr[i] >= low and PSDarr[i] <= high:
-                Filtarr.append(Earr[i])
-                trarr.append(i)
+        if PSDarr[i] >= -0.00028333333 * Earr[i] + 0.4 and PSDarr[i] >= low and PSDarr[i] <= high:
+            Filtarr.append(Earr[i])
+            trarr.append(i)
 
     return Filtarr, trarr
 
@@ -266,15 +266,18 @@ def main():
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UG_Blood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_17a_t480_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_18b_t1200_UG_CBlood.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_19a_t10800_UG_CBlood.csv'
+    data_file = r'SDataR_WF_Pb212_Ar_2024_10_19a_t10800_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_20a_t18000_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_21a_t21600_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_22a_t28800_UG_CBlood.csv'
-    data_file = r'SDataR_WF_Pb212_Ar_2024_10_23a_t28800_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_23a_t28800_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_24a_t28800_UG_CBlood.csv'
+
 
     # Cleared blood sample with UGf
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UGf_CBlood.csv'
-
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_010_17a_t480_UGf_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_18a_t1200_UGf_CBlood.csv'
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -589,7 +592,7 @@ def main():
 
     # Plots the PSD parameter vs the energy after removing cosmic rays - only channel 1
     fig_psdE_nocosmic, ax_psdE_nocosmic = plt.subplots(layout = 'constrained')
-    h = ax_psdE_nocosmic.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h = ax_psdE_nocosmic.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
     fig_psdE_nocosmic.colorbar(h[3],ax=ax_psdE_nocosmic)
     plt.ylim([0., 1.])
     #ax_psdE_nocosmic.set_title('Energy vs PSD Parameter without Cosmic Rays')
@@ -673,7 +676,7 @@ def main():
         sampledat = np.linspace(0,len(traces_nocosmic[0])-1, len(traces_nocosmic[0]))
         ftr_A, axtr_A = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
-        for i in range(5):
+        for i in range(15):
             axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace', linewidth=2)
         #axtr_A.set_title('Traces in Cut A')
         axtr_A.set_ylabel('ADC Channel')
@@ -788,14 +791,15 @@ def main():
 
         # Finds a beta trace with the same trace max as the chosen alpha trace
         index_AC = 0
+        tracemaxA = np.abs(np.min(traces_nocosmic[tracesind_filtA[9]])) # find max alpha trace height
         for i in range(len(tracesind_filtC)):
-            if np.abs(np.min(traces_nocosmic[tracesind_filtC[i]]) - 9500) < 5:
+            if np.abs(np.min(traces_nocosmic[tracesind_filtC[i]]) - tracemaxA) < 5:
                 index_AC = tracesind_filtC[i]
                 break
         # Plots an alpha and a beta trace
         ftr_AC, axtr_AC = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
-        axtr_AC.plot(wavetime, traces_nocosmic[tracesind_filtA[3]], label='Alpha Trace', linewidth = 2, color='black', linestyle='dashed')
+        axtr_AC.plot(wavetime, traces_nocosmic[tracesind_filtA[9]], label='Alpha Trace', linewidth = 2, color='black', linestyle='dashed')
         axtr_AC.plot(wavetime, traces_nocosmic[index_AC], label='Beta Trace', linewidth = 2, color='orange')
         #axtr_AC.plot([86,86], [13200,9000], label='Short Gate', linewidth = 2, color='red')
         #axtr_AC.plot([106,106], [13200,9000], linewidth = 2, color='red')
@@ -813,16 +817,16 @@ def main():
 
         # Plots the overlaid alpha/beta traces but smoothed with a spline
         xAC_spline = np.linspace(wavetime[0], wavetime[-1], 1000)
-        yAC_spline_alpha = CubicSpline(wavetime, traces_nocosmic[tracesind_filtA[3]])
+        yAC_spline_alpha = CubicSpline(wavetime, traces_nocosmic[tracesind_filtA[9]])
         yAC_spline_beta = CubicSpline(wavetime, traces_nocosmic[index_AC])
         # Plots an alpha and a beta trace with the long and short integration gates drawn
 
         xAC_LG = [86, 410]
-        yAC_LG = [9250, 9250]
+        yAC_LG = [8500, 8500]
         capsAC_LG = [250, 250] # Draw endcaps for the line
 
         xAC_SG = [86, 116]
-        yAC_SG = [8700, 8700]
+        yAC_SG = [7900, 7900]
         capsAC_SG = [250, 250] # Draw endcaps for the line
 
         ftr_AC_spline, axtr_AC_spline = plt.subplots(layout = 'constrained')
@@ -830,14 +834,14 @@ def main():
         axtr_AC_spline.plot(xAC_spline, yAC_spline_beta(xAC_spline), label='Beta Trace', linewidth = 2, color='orange')
         axtr_AC_spline.plot(xAC_LG, yAC_LG, linewidth = 2, color='blue')
         axtr_AC_spline.errorbar(xAC_LG, yAC_LG, yerr=capsAC_LG, color='blue', ls='none', elinewidth=2, ecolor='blue')
-        axtr_AC_spline.text(125, 8800, r'$Q_{Long}$', color='blue')
+        axtr_AC_spline.text(125, 8050, r'$Q_{Long}$', color='blue')
         axtr_AC_spline.plot(xAC_SG, yAC_SG, linewidth=2, color='red')
         axtr_AC_spline.errorbar(xAC_SG, yAC_SG, yerr=capsAC_SG, color='red', ls='none', elinewidth=2, ecolor='red')
-        axtr_AC_spline.text(95, 8300, r'$Q_{Short}$', color='red')
+        axtr_AC_spline.text(95, 7400, r'$Q_{Short}$', color='red')
         axtr_AC_spline.set_ylabel('Voltage (mV)')
         axtr_AC_spline.set_xlabel('Time (ns)')
         axtr_AC_spline.set_xlim([75, 175])
-        axtr_AC_spline.set_ylim([yStart, yEnd])
+        axtr_AC_spline.set_ylim([7000, yEnd])
         axtr_AC_spline.legend(loc='lower right')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha_Splined.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha_Splined.png", format='png')
@@ -867,7 +871,7 @@ def main():
 
     # For a non-straight A cut
     #xline = np.linspace(0, (PSDlowA - 0.35) / (-0.0001166667),9)
-    #yline = np.full(len(xline), -0.0001166667 * xline + 0.35)
+   # yline = np.full(len(xline), -0.0001166667 * xline + 0.35)
     #xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
     #yline = np.full(len(xline), -0.0001442 * xline + 0.375)
     #xline = np.append(xline, 4096)
@@ -943,7 +947,7 @@ def main():
     ax_filtEA.set_ylabel('Counts')
    # ax_filtEA.set_yscale('log')
     plt.xlim(0,2500) # With UG and Cleared Blood
-    plt.ylim([0,50])
+    #plt.ylim([0,20])
     #plt.xlim(0,4095)
     if wavesdat is False:
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_AlphaGate.eps", format='eps')
@@ -961,7 +965,7 @@ def main():
 
     # Plots the filtered energy data for cut C
     fig_filtEC, ax_filtEC = plt.subplots(layout = 'constrained')
-    (data_entriesC, binsC, patchesC) = ax_filtEC.hist(energy_filtC, bins=nbins, range = [0,4095])
+    (data_entriesC, binsC, patchesC) = ax_filtEC.hist(energy_filtC, bins=nbins, range = [0,4095],label='cutC')
     ax_filtEC.set_xlabel('ADC Channel')
     ax_filtEC.set_ylabel('Counts')
 
@@ -990,6 +994,7 @@ def main():
     # Fitting the alpha peaks
 
     # Get bin centers
+    # Get bin centers
     bincenters = np.array([0.5 * (bins[i] + bins[i + 1])  for i in range(len(bins) - 1)])
 
     # Find the bin width
@@ -998,10 +1003,10 @@ def main():
     # Define range for each peak
     # For regular Ultima Gold
     lower_bound1 = 500
-    upper_bound1 = 1050
+    upper_bound1 = 1000
 
-    lower_bound2 = 1200
-    upper_bound2 = 1800
+    lower_bound2 = 1000
+    upper_bound2 = 1500
 
     # For Ultima Gold AB
     if UG == 'AB':
@@ -1104,7 +1109,7 @@ def main():
     plt.xlim(0,2500) # With UG and Cleared Blood
     #plt.xlim(750,3000) # With F UG
     #plt.xlim(0,4095) # With F UG and optical grease
-    plt.ylim(0,50)
+    #plt.ylim(0,20)
     fitax.set_xlabel('ADC Channel')
     fitax.set_ylabel('Counts')
     if wavesdat is False:
@@ -1149,12 +1154,19 @@ def main():
     # Calculates and prints the 212Po branching ratio
     print(r"The Pb-212 branching ratio is: ", (GInt2 + len(energy_filtB))/(GInt1 + GInt2 + len(energy_filtB)))
 
+    #Adds up peak counts instead of integrating
+    peak1_add = ((500 < energy_filtA) & (energy_filtA < 950)).sum()
+    peak2_add = ((1000 < energy_filtA) & (energy_filtA < 1400)).sum()
+
+    print("Bin sums for peaks 1: ", peak1_add, " and 2: ", peak2_add)
+
     #Adds up alpha at low energy, really only see these with UG F and optical grease
     first_second_decay = ((1400 < energy_filtA) & (energy_filtA < 2300)).sum()
     fourth_decay = ((550 < energy_filtA) & (energy_filtA < 950)).sum()
     third_decay = ((950 < energy_filtA) & (energy_filtA < 1400)).sum()
     print("Events at ~ 700 peak between 550 and 950 ", fourth_decay, " % of Bi-212 alpha decays: ", fourth_decay/first_second_decay)
     print("Events at ~ 1200 peak between 950 and 1400 ", third_decay, " % of Bi-212 alpha decays: ", third_decay/first_second_decay)
+
 
     # Writes the data from the alpha PSD region to a file
     f = open('Pb212_AlphaEvents_08122024.txt', 'w')

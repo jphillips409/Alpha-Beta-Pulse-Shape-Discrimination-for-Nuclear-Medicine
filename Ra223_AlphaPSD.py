@@ -209,7 +209,7 @@ def main():
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_27b_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_28a_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_28b_t60_Uf.csv'
-    #data_file = r'SDataR_WF_Ra223_Ar_2024_07_10a_t180_Uf.csv'
+    data_file = r'SDataR_WF_Ra223_Ar_2024_07_10a_t180_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_07_12a_t240_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_07_14a_t300_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_2a_t1200_Uf.csv'
@@ -219,7 +219,7 @@ def main():
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_09a_t1800_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_12a_t1800_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_13a_t1800_Uf.csv'
-    data_file = r'SDataR_WF_Ra223_Ar_2024_08_14a_t1800_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_08_14a_t1800_Uf.csv'
 
 
 
@@ -246,8 +246,8 @@ def main():
     # Unpacks the data, choose alldat to True if you want to read all the file
     # Set wavesdat to True if you want the waveforms
     # Truncated version is set to 10000 events
-    alldat = False
-    wavesdat = True
+    alldat = True
+    wavesdat = False
     data = Unpack(file_to_open, alldat, wavesdat)
 
     # Choose what type of Ultima Gold you are using
@@ -731,6 +731,9 @@ def main():
 
     ax_psdE2.set_ylabel('PSD parameter')
     ax_psdE2.set_xlabel('ADC Channel')
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_PSDvsE_Gates.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_PSDvsE_Gates.png", format='png')
     plt.show()
 
     # Focus on the B cut region
@@ -894,6 +897,9 @@ def main():
     plt.xlim(0,4095) # if using optical grease
     fitax.set_xlabel('ADC Channel')
     fitax.set_ylabel('Counts')
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Fit.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Fit.png", format='png')
     plt.show()
 
     # Calculates the integral
@@ -964,6 +970,34 @@ def main():
     fitax_quad.set_xlabel('ADC Channel')
     fitax_quad.set_ylabel('Counts')
     plt.show()
+
+    #Plots fit and 2d vertically together
+    fig = plt.figure(layout='constrained', figsize=(8,12))
+    fitax_quad = fig.add_subplot(2,1,2)
+    fitax_quad2 = fig.add_subplot(2,1,1)
+    fitax_quad.hist(energy_filtA, bins=nbins, range=[0, 4095], label='PSD Filtered Energy')
+    fitax_quad.plot(xspace, TripleGaussFit(xspace, *E_param), linewidth=2.5, label=r'3 Gaussian Fit')
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param[3], E_param[4], E_param[5]), linewidth=2.5, label=r'$^{223}$Ra $\alpha$ fit')
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param[0], E_param[1], E_param[2]), linewidth=2.5, label=r'$^{219}$Rn $\alpha$ fit')
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param[6], E_param[7], E_param[8]), linewidth=2.5, label=r'$^{215}$Po $\alpha$ fit')
+    fitax_quad.legend()
+    fitax_quad.set_xlim(0,4095)
+    fitax_quad.set_xlabel('ADC Channel')
+    fitax_quad.set_ylabel('Counts')
+
+    h2 = fitax_quad2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    fig.colorbar(h2[3],ax=fitax_quad2,fraction=0.046, pad=0.04)
+    fitax_quad2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
+    fitax_quad2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
+    fitax_quad2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
+    #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
+    plt.ylim([0, 1])
+    plt.xlim([0,4095])
+    fitax_quad2.set_xlabel('ADC Channel')
+    fitax_quad2.set_ylabel('PSD Parameter')
+    plt.show()
+
+    print(fitax_quad2.posi)
 
 # Runs the main file
 main()
