@@ -388,19 +388,19 @@ def main():
     xspace = np.linspace(0,  Pb212_CBlood_halflives[-1], 100)
     scattersize = 1
     fitpltPb_triple, fitaxPb_triple = plt.subplots(layout='constrained')
-    fitaxPb_triple.scatter(Pb212_HPGe_halflives, Pb212_HPGe_LN, linewidth=2.5, label='HPGe Sample', color='red',s=15, marker='^')
+    fitaxPb_triple.scatter(Pb212_HPGe_halflives, Pb212_HPGe_LN, linewidth=2.5, label='Gamma Counter', color='red',s=15, marker='^')
     #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_HPGe_hl), color='red',
                          #linestyle='dashed',linewidth=1)
     fitaxPb_triple.errorbar(Pb212_HPGe_halflives, Pb212_HPGe_LN, yerr=Pb212_HPGe_LN_err,xerr=None, color='red', ls='none',
                              capsize=3, capthick=1,
                              ecolor='black')
-    fitaxPb_triple.scatter(Pb212_halflives, Pb212_LN, linewidth=2.5, label='Optimized Sample', color='blue',s=15)
+    fitaxPb_triple.scatter(Pb212_halflives, Pb212_LN, linewidth=2.5, label='Optimized LSC', color='blue',s=15)
     #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_hl), color='blue',
                          #linestyle='dashed',linewidth=1)
     fitaxPb_triple.errorbar(Pb212_halflives, Pb212_LN, yerr=Pb212_LN_err,xerr=None, color='blue', ls='none',
                              capsize=3, capthick=1,
                              ecolor='blue')
-    fitaxPb_triple.scatter(Pb212_CBlood_halflives, Pb212_CBlood_LN, linewidth=2.5, label='Cleared Blood Sample', color='green',s=15,marker='s')
+    fitaxPb_triple.scatter(Pb212_CBlood_halflives, Pb212_CBlood_LN, linewidth=2.5, label='Cleared Blood LSC', color='green',s=15,marker='s')
     #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_CBlood_hl), color='green',
                          #linestyle='dashed',linewidth=1)
     fitaxPb_triple.errorbar(Pb212_CBlood_halflives, Pb212_CBlood_LN, yerr=Pb212_CBlood_LN_err,xerr=None, color='green', ls='none',
