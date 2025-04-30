@@ -97,7 +97,12 @@ def PSDcutA(low, high, Earr, PSDarr):
             #trarr.append(i)
 
             # For a non straight lower PSD gate, UG with cleared blood, 24 ns SG
-        if PSDarr[i] >= -0.00028333333 * Earr[i] + 0.4 and PSDarr[i] >= low and PSDarr[i] <= high:
+        #if PSDarr[i] >= -0.00028333333 * Earr[i] + 0.4 and PSDarr[i] >= low and PSDarr[i] <= high:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
+
+            # For a non straight lower PSD gate, UG with mouse urine, 24 ns SG
+        if PSDarr[i] >= -0.00028333333 * Earr[i] + high and PSDarr[i] >= low and PSDarr[i] <= high:
             Filtarr.append(Earr[i])
             trarr.append(i)
 
@@ -650,8 +655,14 @@ def main():
     #PSDlowlineA = np.append(yline, PSDlowA)
 
     # For a non-straight A cut - regular UG with clear blood - 24 ns gate
-    xline = np.linspace(0, (PSDlowA - 0.4) / (-0.000283333),9)
-    yline = np.full(len(xline), -0.000283333 * xline + 0.4)
+    #xline = np.linspace(0, (PSDlowA - 0.4) / (-0.000283333),9)
+    #yline = np.full(len(xline), -0.000283333 * xline + 0.4)
+    #xline = np.append(xline, 4096)
+    #PSDlowlineA = np.append(yline, PSDlowA)
+
+    # For a non-straight A cut - regular UG with mouse urine - 24 ns gate
+    xline = np.linspace(0, (PSDlowA - PSDhighA) / (-0.000283333),9)
+    yline = np.full(len(xline), -0.000283333 * xline + PSDhighA)
     xline = np.append(xline, 4096)
     PSDlowlineA = np.append(yline, PSDlowA)
 
