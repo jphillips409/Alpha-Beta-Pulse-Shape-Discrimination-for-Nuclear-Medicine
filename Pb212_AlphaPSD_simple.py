@@ -151,6 +151,54 @@ def Ecut(Earr, PSDarr, Eval, low, high):
 
     return Filtarr, trarr
 
+
+# Plotting subroutines to clean up code
+
+# Plotting a single 1D hist
+def OneDHist(xdata,nbins,rangex,xlim,ylim,xtitle,ytitle):
+
+    fig_oned, ax_oned = plt.subplots(layout='constrained')
+    ax_oned.hist(xdata, bins=nbins, range=rangex)
+    ax_oned.set_xlabel(xtitle, fontsize=20)
+    ax_oned.set_ylabel(ytitle, fontsize=20)
+    plt.ylim([0, ylim])
+    plt.xlim([0, xlim])
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+
+    # Optional for saving
+    #if wavesdat is False:
+        #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.eps",
+                   # format='eps')
+        #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.png",
+                   # format='png')
+    plt.show()
+
+    return
+
+# Plotting a single 2D hist
+def TwoDHist(xdata,ydata,nbinsx,nbinsy,rangex,rangey,xlim,ylim,xtitle,ytitle):
+
+    fig_twod, ax_twod = plt.subplots(layout = 'constrained')
+    h = ax_twod.hist2d(xdata, ydata, bins=[nbinsx,nbinsy], range=[rangex, rangey], norm=mpl.colors.LogNorm(), cmin = 1)
+    fig_twod.colorbar(h[3],ax=ax_twod)
+    ax_twod.set_xlabel(xtitle, fontsize=20)
+    ax_twod.set_ylabel(ytitle, fontsize=20)
+    plt.ylim([0, ylim])
+    plt.xlim([0, xlim])
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+
+    # Optional for saving
+    #if wavesdat is False:
+        #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.eps",
+                   # format='eps')
+        #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.png",
+                   # format='png')
+    plt.show()
+
+    return
+
 # Function that accepts filtered energy data and returns a double Gaussian fit
 # Parameters go as amplitude, position, standard deviation
 # bl is a parameter for a constant baseline noise
@@ -309,13 +357,39 @@ def main():
 
 
     # Mice urine 48 hrs post injection - 04/25/2025
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\Ap25_2025_48hrs_postinjection")
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\Ap25_2025_48hrs_postinjection")
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25_t60_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25a_t3600_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25b_t3600_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25c_t3600_UG_Urine.csv'
-    data_file = r'SDataR_WF_Pb212_Ar_2025_04_25d_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25d_t3600_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25e_t3600_UG_Urine.csv'
+
+
+    # Mice urine w/ free Pb212 1 hr post injection - 05/14/2025
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\May14_2025_1hr_postinjection_nochelator")
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_14_t60_UG_Urine.csv'
+    data_file = r'SDataR_WF_Pb212_Ar_2025_05_14a_t1500_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_14b_t1500_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_14c_t1500_UG_Urine.csv'
+
+    # Mice urine w/ free Pb212 24 hrs post injection - 05/15/2025
+    # Cleaned excess grease from inside the LSC
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\May15_2025_24hrs_postinjection_nochelator")
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_15a_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_15b_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_15c_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_15d_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_15e_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_15f_t3600_UG_Urine.csv'
+
+    # Mice urine w/ free Pb212 48 hrs post injection - 05/16/2025
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\May16_2025_48hrs_postinjection_nochelator")
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_16a_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_16b_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_16c_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_16d_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_16e_t3600_UG_Urine.csv'
 
 
     # Now joins the path and file
@@ -438,7 +512,8 @@ def main():
     psd_err = 0
 
     # Gets the difference between the first and last timestamp
-    print("1st and last dT is: ", time[len(time) - 1] - time[0], "ps")
+    diff_t = time[-1] - time[0]
+    print("1st and last dT is: ", diff_t, "ps")
 
     #Checks how many events have an unrealistic PSD parameter
     for i in range(len(psd_parameter)):
@@ -520,8 +595,13 @@ def main():
             if wavesdat is True: traces_nocosmic.append(traces[i])
 
     traces_nocosmic = np.array(traces_nocosmic)
+    energy_nocosmic = np.array(energy_nocosmic)
 
     print('The number of cosmic ray events is: ', len(energy_cosmic))
+
+    # Prints the number of events at 4095 E, this is where saturation events should fall
+    energy_saturation = energy_nocosmic[energy_nocosmic == 4095]
+    print('Num events at saturation E (4095 ADC): ', len(energy_saturation))
 
 
     # Now we start plotting the raw data
@@ -531,32 +611,14 @@ def main():
 
     # Plots the raw energy after removing cosmic rays - only channel 1
     # Also remove saturated events, i.e. E = 4095
-    energy_nocosmic = np.array(energy_nocosmic)
     psd_parameter_nocosmic = np.array(psd_parameter_nocosmic)
     energy_nocosmic_nosat = energy_nocosmic[energy_nocosmic < 4095]
-    fig_rawE_nocosmic, ax_rawE_nocosmic = plt.subplots(layout = 'constrained')
-    ax_rawE_nocosmic.hist(energy_nocosmic_nosat, bins=nbins, range = [0,4095])
-    ax_rawE_nocosmic.set_xlabel('ADC Channel',fontsize=20)
-    ax_rawE_nocosmic.set_ylabel('Counts',fontsize=20)
-    plt.ylim([0,2500])
-    plt.xlim([0,4095])
-    plt.xticks(fontsize=15)
-    plt.yticks(fontsize=15)
 
-    if wavesdat is False:
-        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.eps", format='eps')
-        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.png", format='png')
-    plt.show()
+    OneDHist(energy_nocosmic_nosat, nbins, [0,4095],3000,4095,'ADC Channel', 'Counts')
+
 
     # Plots the PSD parameter vs the energy after removing cosmic rays - only channel 1
-    fig_psdE_nocosmic, ax_psdE_nocosmic = plt.subplots(layout = 'constrained')
-    h = ax_psdE_nocosmic.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
-    fig_psdE_nocosmic.colorbar(h[3],ax=ax_psdE_nocosmic)
-    plt.ylim([0., 1.])
-    #ax_psdE_nocosmic.set_title('Energy vs PSD Parameter without Cosmic Rays')
-    ax_psdE_nocosmic.set_ylabel('PSD parameter',fontsize=20)
-    ax_psdE_nocosmic.set_xlabel('ADC Channel',fontsize=20)
-    plt.show()
+    TwoDHist(energy_nocosmic, psd_parameter_nocosmic, nbins, 500, [0,4095], [0,1], 4095, 1, 'ADC Channel', 'PSD parameter')
 
     ############################################################################################################
     # Makes PSD cuts
@@ -593,6 +655,12 @@ def main():
 
     energy_filtA = np.array(energy_filtA)
 
+    #Get the times for these events
+    time_filtA = []
+    for i in range(len(tracesind_filtA)):
+        time_filtA.append(time_nocosmic[tracesind_filtA[i]])
+    time_filtA = np.array(time_filtA)
+
     # If using Ultima Gold F on a 10 fC/(lsb x Vpp) setting, get events between alpha peaks
     #energy_filtAbtw_temp = energy_filtA[energy_filtA >= 400]
     #energy_filtAbtw_temp = np.array(energy_filtAbtw_temp)
@@ -600,10 +668,10 @@ def main():
 
     BiAlphaCPS = energy_filtA[energy_filtA >= 550]
     BiAlphaCPS = BiAlphaCPS[BiAlphaCPS <= 1050]
-    pltBi, axBi = plt.subplots(layout = 'constrained')
-    axBi.hist(BiAlphaCPS, bins=nbins, range=[0, 4095])
-    plt.xlim(0,2000)
-    plt.show()
+    #pltBi, axBi = plt.subplots(layout = 'constrained')
+    #axBi.hist(BiAlphaCPS, bins=nbins, range=[0, 4095])
+    #plt.xlim(0,2000)
+    #plt.show()
     print("Counts in Bi alpha PSD/energy region: ", len(BiAlphaCPS))
     print("CPS in Bi alpha PSD/energy region: ", len(BiAlphaCPS)/runtime)
 
@@ -780,11 +848,11 @@ def main():
 
     # For regular Ultima Gold with optical grease and for mouse urine
     # Might vary from sample to sample, probably due to mouse hydration
-    lower_bound1 = 600
-    upper_bound1 = 1300
+    lower_bound1 = 500
+    upper_bound1 = 1200
 
-    lower_bound2 = 1300
-    upper_bound2 = 2200
+    lower_bound2 = 1200
+    upper_bound2 = 2100
 
     # For Ultima Gold AB
     if UG == 'AB':
@@ -945,6 +1013,20 @@ def main():
     third_decay = ((950 < energy_filtA) & (energy_filtA < 1400)).sum()
     print("Events at ~ 700 peak between 550 and 950 ", fourth_decay, " % of Bi-212 alpha decays: ", fourth_decay/first_second_decay)
     print("Events at ~ 1200 peak between 950 and 1400 ", third_decay, " % of Bi-212 alpha decays: ", third_decay/first_second_decay)
+
+
+    # Finds the number of alpha at a specific time in the run
+    # Start with the first 8th and the last 8th
+    alphas_first8th = 0
+    alphas_last8th = 0
+    first8th = (1/8)*diff_t
+    for i in range(len(time_filtA)):
+        if energy_filtA[i] > 750 and energy_filtA[i] < 2500 and time_filtA[i] < first8th: alphas_first8th += 1
+
+        if energy_filtA[i] > 750 and energy_filtA[i] < 2500 and time_filtA[i] > diff_t - first8th: alphas_last8th += 1
+
+    print('Alphas in the first 8th: ', alphas_first8th)
+    print('Alphas in the last 8th: ', alphas_last8th)
 
 
 main()
