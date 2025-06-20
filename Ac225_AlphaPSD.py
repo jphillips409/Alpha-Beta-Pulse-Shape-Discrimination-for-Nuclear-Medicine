@@ -49,7 +49,7 @@ plt.rcParams['ytick.minor.right'] = True
 plt.rcParams['ytick.minor.left'] = True
 plt.rcParams['ytick.minor.visible'] = True
 
-plt.rcParams['font.size'] = 14
+plt.rcParams['font.size'] = 15
 plt.rcParams['axes.titlepad'] = 15
 
 
@@ -672,7 +672,7 @@ def main():
     ElineC = np.full(len(yline), 150)
 
     fig_psdE2, ax_psdE2 = plt.subplots(layout = 'constrained')
-    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
     fig_psdE2.colorbar(h2[3],ax=ax_psdE2)
     ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
@@ -681,8 +681,10 @@ def main():
     plt.ylim([0, 1])
     plt.xlim([0,4095])
 
-    ax_psdE2.set_ylabel('PSD parameter')
-    ax_psdE2.set_xlabel('ADC Channel')
+    ax_psdE2.set_ylabel('PSD parameter',fontsize=20)
+    ax_psdE2.set_xlabel('ADC Channel',fontsize=20)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     plt.show()
 
     # Focus on the B cut region
@@ -952,15 +954,18 @@ def main():
     fitplt_quad, fitax_quad = plt.subplots(layout='constrained')
     fitax_quad.hist(energy_filtA, bins=nbins, range=[0, 4095], label='PSD Filtered Energy', alpha=0.8)
     fitax_quad.plot(xspace, QuadGaussFit(xspace, *E_param_quad), linewidth=2.5, label=r'4 Gaussian Fit')
-    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[0], E_param_quad[1], E_param_quad[2]), linewidth=2.5)
-    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[3], E_param_quad[4], E_param_quad[5]), linewidth=2.5)
-    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[6], E_param_quad[7], E_param_quad[8]), linewidth=2.5)
-    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[9], E_param_quad[10], E_param_quad[11]), linewidth=2.5)
-    #plt.legend()
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[0], E_param_quad[1], E_param_quad[2]), linewidth=2.5, label=r'$^{225}$Ac $\alpha$ fit')
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[3], E_param_quad[4], E_param_quad[5]), linewidth=2.5, label=r'$^{221}$Fr $\alpha$ fit')
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[6], E_param_quad[7], E_param_quad[8]), linewidth=2.5, label=r'$^{217}$At $\alpha$ fit')
+    fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[9], E_param_quad[10], E_param_quad[11]), linewidth=2.5, label=r'$^{213}$Po $\alpha$ fit')
+    plt.legend(loc='upper right',fontsize=12)
 
     plt.xlim(0, 4095)
-    fitax_quad.set_xlabel('ADC Channel')
-    fitax_quad.set_ylabel('Counts')
+    plt.ylim(0, 6000)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    fitax_quad.set_xlabel('ADC Channel',fontsize=20)
+    fitax_quad.set_ylabel('Counts',fontsize=20)
     plt.show()
 
     #Using 4 Gaussian fit to calculate activity
@@ -1012,7 +1017,7 @@ def main():
     fig = plt.figure(layout='constrained', figsize=(8,12))
     fitax_quad = fig.add_subplot(2,1,2)
     fitax_quad2 = fig.add_subplot(2,1,1)
-    fitax_quad.hist(energy_filtA, bins=nbins, range=[0, 4095], label='PSD Filtered Energy', alpha=0.8)
+    fitax_quad.hist(energy_filtA, bins=nbins, range=[0, 4095], label=r'$\alpha$ Events', alpha=0.8)
     fitax_quad.plot(xspace, QuadGaussFit(xspace, *E_param_quad), linewidth=2.5, label=r'4 Gaussian Fit')
     fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[0], E_param_quad[1], E_param_quad[2]), linewidth=2.5, label=r'$^{225}$Ac $\alpha$ fit')
     fitax_quad.plot(xspace, GaussFit(xspace, E_param_quad[3], E_param_quad[4], E_param_quad[5]), linewidth=2.5, label=r'$^{221}$Fr $\alpha$ fit')
@@ -1021,10 +1026,10 @@ def main():
     fitax_quad.legend()
     fitax_quad.set_xlim(0,4095)
     fitax_quad.set_ylim(0,6000)
-    fitax_quad.set_xlabel('ADC Channel')
-    fitax_quad.set_ylabel('Counts')
+    fitax_quad.set_xlabel('ADC Channel',fontsize=20)
+    fitax_quad.set_ylabel('Counts',fontsize=20)
 
-    h2 = fitax_quad2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h2 = fitax_quad2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1, rasterized=True)
     fig.colorbar(h2[3],ax=fitax_quad2,fraction=0.046, pad=0.04)
     fitax_quad2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     fitax_quad2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
@@ -1032,8 +1037,14 @@ def main():
     #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
     plt.ylim([0, 1])
    # plt.xlim([0,4095])
-    fitax_quad2.set_xlabel('ADC Channel')
-    fitax_quad2.set_ylabel('PSD Parameter')
+    #fitax_quad2.set_xlabel('ADC Channel')
+    fitax_quad2.set_ylabel('PSD Parameter',fontsize=20)
+
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ac225_Stacked.eps", format='eps', dpi=300)
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ac225_Stacked.png", format='png', dpi=300)
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ac225_Stacked.svg", format='svg', dpi=300)
+
     plt.show()
 
 # Runs the main file

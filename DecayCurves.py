@@ -58,6 +58,34 @@ def MixedLnCurve(x, t1, t2):
 
     return LnCurve(x, t1) + LnCurve(x, t2)
 
+def MixedLnLinCurve(x, t1, t2,a):
+
+    return LnCurve(x, t1) + LnCurve(x, t2) + a
+
+def Activity(x,A,t):
+
+    return A*np.exp(-t*x)
+
+def PbActivity(x,A):
+
+    return A*np.exp(-(np.log(2)/10.628)*x)
+
+def BiActivity(x,A):
+
+    return A*np.exp(-(np.log(2)/(60.551/60))*x)
+
+def BiGrowth(x,A1):
+
+    t1 = np.log(2)/10.628 # Pb-212 decay constant
+    t2 = np.log(2)/(60.551/60) # Bi-212 decay constant
+    return (t2/(t2-t1))*A1*(np.exp(-t1*x)-np.exp(-t2*x))
+
+# For transient equilibrium, t1 and t2 are not parameters
+def Bi212TransEq(x,A1,A2):
+    t1 = np.log(2)/10.628 # Pb-212 decay constant
+    t2 = np.log(2)/(60.551/60) # Bi-212 decay constant
+    return A1*np.exp(-t1*x) + (t2/(t2-t1))*A1*(np.exp(-t1*x)-np.exp(-t2*x)) + A2*np.exp(-t2*x)
+
 def main():
 
     # Pb212 array for days since sample creation
@@ -94,23 +122,27 @@ def main():
     fitaxPb.scatter(Pb212_days, Pb212_LN, linewidth = 2.5, label='$^{212}$Pb Data', color='black')
     fitaxPb.plot(xspace,LnCurve(xspace,*fit_paramPb), label='Linear Fit', color='red', linestyle='dashed')
     fitaxPb.errorbar(Pb212_days, Pb212_LN, yerr=Pb212_LN_err, color='black', ls='none',  capsize=3, capthick=1, ecolor='black')
-    fitaxPb.set_xlabel('Time Since First Sample (Days)')
-    fitaxPb.set_ylabel('Ln(CPS/CPS$_{0}$)')
-    cbar = plt.colorbar(cmmapable, ax=fitaxPb, alpha=0)
+    fitaxPb.set_xlabel('Time Since First Sample (Days)',fontsize=20)
+    fitaxPb.set_ylabel('Ln(CPS/CPS$_{0}$)',fontsize=20)
+    #cbar = plt.colorbar(cmmapable, ax=fitaxPb, alpha=0)
 
     # remove the tick labels
-    cbar.ax.set_yticklabels(['', ''])
+    #cbar.ax.set_yticklabels(['', ''])
     # set the tick length to 0
-    cbar.ax.tick_params(axis='y', which="both", length=0)
+    #cbar.ax.tick_params(axis='y', which="both", length=0)
     # set everything that has a linewidth to 0
-    for a in cbar.ax.get_children():
-        try:
-            a.set_linewidth(0)
-        except:
-            pass
-    fitaxPb.legend(loc='upper right')
+    #for a in cbar.ax.get_children():
+        #try:
+           # a.set_linewidth(0)
+       # except:
+           # pass
+    fitaxPb.legend(loc='upper right',fontsize=18)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.eps", format='eps')
     plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.png", format='png')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.svg", format='svg')
+
     fitpltPb.show()
 
     Pb212_err = np.sqrt(np.diag(fit_covPb))
@@ -312,107 +344,242 @@ def main():
                 format='png')
     fitpltPb_CBlood_hl.show()
 
-    # Pb212 HPGe Data
+    # Pb212 Gamma Counter Data
     # Pb212 array for days since sample creation
-    Pb212_HPGe_days = [0,0.705259263,0.822686689,0.995701008,1.038780897,1.715551833,1.869110756,1.916359656,2.803666134,2.871065279,3.743780204,3.832024462,4.740176035,4.758241806,5.729623439,5.987407926,6.721155614]
-    Pb212_HPGe_days = np.array(Pb212_HPGe_days)
-    Pb212_HPGe_CPS = []
-    Pb212_HPGe_CPS = np.array(Pb212_CBlood_CPS)
-    Pb212_HPGe_CPSunc = []
-    Pb212_HPGe_CPSunc = np.array(Pb212_HPGe_CPSunc)
+    Pb212_GC_days = [0.00,0.82,1.04,1.71,1.92,2.87,3.83,4.74,5.73,6.72]
+    Pb212_GC_days = np.array(Pb212_GC_days)
 
-    Pb212_HPGe_LN = [0,-1.10284694,-1.2698493,-1.5475182,-1.608356,-2.6697923,-2.9114899,-2.9876657,-4.3148297,-4.4026968,-5.52426806,-5.6988116,-6.5011448,-6.40442308,-6.91355,-6.75485451,-6.9635311]
-    Pb212_HPGe_LN = np.array(Pb212_HPGe_LN)
-    Pb212_HPGe_LN_err = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    Pb212_GC_LN = [0,-1.2698493,-1.608356,-2.6697923,-2.9876657,-4.4026968,-5.6988116,-6.5011448,-6.91355,-6.9635311]
+    Pb212_GC_LN = np.array(Pb212_GC_LN)
+    Pb212_GC_LN_err = [0,0.012952463,0.019461108,0.054730742,0.071703977,0.215291874,0.537397934,0.930963935,1.216093445,1.296609491]
 
     #for fitting
-    Pb212_HPGe_days_fit = [0,0.705259263,0.822686689,0.995701008,1.038780897,1.715551833,1.869110756,1.916359656,2.803666134,2.871065279,3.743780204,3.832024462]
-    Pb212_HPGe_days_fit = np.array(Pb212_HPGe_days_fit)
-    Pb212_HPGe_LN_fit = [0,-1.10284694,-1.2698493,-1.5475182,-1.608356,-2.6697923,-2.9114899,-2.9876657,-4.3148297,-4.4026968,-5.52426806,-5.6988116]
-    Pb212_HPGe_LN_fit = np.array(Pb212_HPGe_LN_fit)
-    Pb212_HPGe_LN_err_fit = [0,0,0,0,0,0,0,0,0,0,0]
+    Pb212_GC_days_fit = [0.00,0.82,1.04,1.71,1.92,2.87,3.83,4.74,5.73,6.72]
+    Pb212_GC_days_fit = np.array(Pb212_GC_days_fit)
+    Pb212_GC_LN_fit = [0,-1.2698493,-1.608356,-2.6697923,-2.9876657,-4.4026968,-5.6988116,-6.5011448,-6.91355,-6.9635311]
+    Pb212_GC_LN_fit = np.array(Pb212_GC_LN_fit)
+    Pb212_GC_LN_err_fit = [0,-0.012952463,-0.019461108,-0.054730742,-0.071703977,-0.215291874,-0.537397934,-0.930963935,-1.216093445,-1.296609491]
+    # Literature Pb212 half-life
+    Pb212_GC_t1half_lit = 10.628  # hours
+    Pb212_GC_halflives = (Pb212_GC_days * 24) / Pb212_GC_t1half_lit
+    Pb212_GC_halflives = np.array(Pb212_GC_halflives)
+
+    Pb212_GC_halflives_fit = (Pb212_GC_days_fit * 24) / Pb212_GC_t1half_lit
+    Pb212_GC_halflives_fit = np.array(Pb212_GC_halflives_fit)
+
+    paramPb = [-0.01]
+
+    fit_paramPb_GC, fit_covPb_GC = curve_fit(LnCurve, xdata=Pb212_GC_days_fit, ydata=Pb212_GC_LN_fit, maxfev=100000)
+
+    xspace = np.linspace(0,  Pb212_GC_days[-1], 100)
+
+    fitpltPb_GC, fitaxPb_GC = plt.subplots(layout='constrained')
+    fitaxPb_GC.scatter(Pb212_GC_days, Pb212_GC_LN, linewidth=2.5, label='$^{212}$Pb Data', color='black')
+    fitaxPb_GC.plot(xspace, LnCurve(xspace, *fit_paramPb_GC), label='Linear Fit', color='red', linestyle='dashed')
+    fitaxPb_GC.errorbar(Pb212_GC_days, Pb212_GC_LN, yerr=Pb212_GC_LN_err, color='black', ls='none', capsize=3, capthick=1,
+                     ecolor='black')
+    fitaxPb_GC.set_xlabel('Time Since First Sample (Days)')
+    fitaxPb_GC.set_ylabel('Ln(CPS/CPS$_{0}$)')
+
+    fitaxPb_GC.legend(loc='upper right')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve.eps", format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve.png", format='png')
+    fitpltPb_GC.show()
+
+    Pb212_GC_err = np.sqrt(np.diag(fit_covPb_GC))
+    print("The Pb-212 half-life from the GC is  ", 24*np.log(2)/np.abs(fit_paramPb_GC[0]), " +/- ", np.abs((Pb212_GC_err[0]/fit_paramPb_GC[0])*24*np.log(2)/np.abs(fit_paramPb_GC[0]))," hours")
+
+    fit_paramPb_GC_hl, fit_covPb_GC_hl = curve_fit(LnCurve, xdata=Pb212_GC_halflives_fit, ydata=Pb212_GC_LN_fit, maxfev=100000)
+    print(fit_paramPb_CBlood_hl)
+    # Plot the Pb-212 as a function of half-lives
+    xspace = np.linspace(0, Pb212_GC_halflives[-1], 100)
+    fitpltPb_GC_hl, fitaxPb_GC_hl = plt.subplots(layout='constrained')
+    fitaxPb_GC_hl.scatter(Pb212_GC_halflives, Pb212_GC_LN, linewidth=2.5, label='$^{212}$Pb Data', color='black')
+    fitaxPb_GC_hl.plot(xspace, LnCurve(xspace, *fit_paramPb_GC_hl), label='Linear Fit', color='red', linestyle='dashed')
+    fitaxPb_GC_hl.errorbar(Pb212_GC_halflives, Pb212_GC_LN, yerr=Pb212_GC_LN_err, color='black', ls='none', capsize=3, capthick=1,
+                        ecolor='black')
+    fitaxPb_GC_hl.set_xlabel('Half-Lives Since First Sample')
+    fitaxPb_GC_hl.set_ylabel('Ln(CPS/CPS$_{0}$)')
+    fitaxPb_GC_hl.legend(loc='upper right')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.eps",
+                format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.png",
+                format='png')
+    fitpltPb_GC_hl.show()
+
+    # Pb212 GC Data
+    # Pb212 array for days since sample creation
+    Pb212_HPGe_days = [0.00,0.78,1.02,1.75,2.04,2.77,3.88,4.73,5.78,6.72,7.78]
+    Pb212_HPGe_days = np.array(Pb212_HPGe_days)
+    Pb212_HPGe_LN = [0,-1.186187637,-1.637360743,-2.704583135,-3.179791882,-4.288394263,-5.686809985,-6.324607071,-6.4803616,-6.572082723,-6.612289143]
+    Pb212_HPGe_LN = np.array(Pb212_HPGe_LN)
+    Pb212_HPGe_LN_err = [0,0.03380838,0.058477169,0.095088079,0.141779912,0.235356211,0.362577762,0.39223548,0.307198602,0.326166989,0.334826276]
     # Literature Pb212 half-life
     Pb212_HPGe_t1half_lit = 10.628  # hours
     Pb212_HPGe_halflives = (Pb212_HPGe_days * 24) / Pb212_HPGe_t1half_lit
     Pb212_HPGe_halflives = np.array(Pb212_HPGe_halflives)
 
-    Pb212_HPGe_halflives_fit = (Pb212_HPGe_days_fit * 24) / Pb212_HPGe_t1half_lit
-    Pb212_HPGe_halflives_fit = np.array(Pb212_HPGe_halflives_fit)
-
-    paramPb = [-0.01]
-
-    fit_paramPb_HPGe, fit_covPb_HPGe = curve_fit(LnCurve, xdata=Pb212_HPGe_days_fit, ydata=Pb212_HPGe_LN_fit, maxfev=100000)
-
-    xspace = np.linspace(0,  Pb212_HPGe_days[-1], 100)
-
-    fitpltPb_HPGe, fitaxPb_HPGe = plt.subplots(layout='constrained')
-    fitaxPb_HPGe.scatter(Pb212_HPGe_days, Pb212_HPGe_LN, linewidth=2.5, label='$^{212}$Pb Data', color='black')
-    fitaxPb_HPGe.plot(xspace, LnCurve(xspace, *fit_paramPb_HPGe), label='Linear Fit', color='red', linestyle='dashed')
-    fitaxPb_HPGe.errorbar(Pb212_HPGe_days, Pb212_HPGe_LN, yerr=Pb212_HPGe_LN_err, color='black', ls='none', capsize=3, capthick=1,
-                     ecolor='black')
-    fitaxPb_HPGe.set_xlabel('Time Since First Sample (Days)')
-    fitaxPb_HPGe.set_ylabel('Ln(CPS/CPS$_{0}$)')
-
-    fitaxPb_HPGe.legend(loc='upper right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_HPGe_DecayCurve.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_HPGe_DecayCurve.png", format='png')
-    fitpltPb_HPGe.show()
-
-    Pb212_HPGe_err = np.sqrt(np.diag(fit_covPb_HPGe))
-    print("The Pb-212 half-life from the HPGe is  ", 24*np.log(2)/np.abs(fit_paramPb_HPGe[0]), " +/- ", np.abs((Pb212_HPGe_err[0]/fit_paramPb_HPGe[0])*24*np.log(2)/np.abs(fit_paramPb_HPGe[0]))," hours")
-
-    fit_paramPb_HPGe_hl, fit_covPb_HPGe_hl = curve_fit(LnCurve, xdata=Pb212_HPGe_halflives_fit, ydata=Pb212_HPGe_LN_fit, maxfev=100000)
-    print(fit_paramPb_CBlood_hl)
-    # Plot the Pb-212 as a function of half-lives
-    xspace = np.linspace(0, Pb212_HPGe_halflives[-1], 100)
-    fitpltPb_HPGe_hl, fitaxPb_HPGe_hl = plt.subplots(layout='constrained')
-    fitaxPb_HPGe_hl.scatter(Pb212_HPGe_halflives, Pb212_HPGe_LN, linewidth=2.5, label='$^{212}$Pb Data', color='black')
-    fitaxPb_HPGe_hl.plot(xspace, LnCurve(xspace, *fit_paramPb_HPGe_hl), label='Linear Fit', color='red', linestyle='dashed')
-    fitaxPb_HPGe_hl.errorbar(Pb212_HPGe_halflives, Pb212_HPGe_LN, yerr=Pb212_HPGe_LN_err, color='black', ls='none', capsize=3, capthick=1,
-                        ecolor='black')
-    fitaxPb_HPGe_hl.set_xlabel('Half-Lives Since First Sample')
-    fitaxPb_HPGe_hl.set_ylabel('Ln(CPS/CPS$_{0}$)')
-    fitaxPb_HPGe_hl.legend(loc='upper right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_HPGe_DecayCurve_HalfLife.eps",
-                format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_HPGe_DecayCurve_HalfLife.png",
-                format='png')
-    fitpltPb_HPGe_hl.show()
-
 
     #Three Pb curves together
     #Optimized - no blood
     #Cleared blood
-    #HPGe
+    #Gamma Counter
     #Give in terms of half-ves
     xspace = np.linspace(0,  Pb212_CBlood_halflives[-1], 100)
     scattersize = 1
-    fitpltPb_triple, fitaxPb_triple = plt.subplots(layout='constrained')
-    fitaxPb_triple.scatter(Pb212_HPGe_halflives, Pb212_HPGe_LN, linewidth=2.5, label='Gamma Counter', color='red',s=15, marker='^')
-    #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_HPGe_hl), color='red',
+    fitpltPb_triple, fitaxPb_triple = plt.subplots(layout='constrained',figsize=(8,12))
+    fitaxPb_triple.scatter(Pb212_GC_halflives, Pb212_GC_LN, linewidth=2.5, label='Gamma Counter', color='red',s=100, marker='^')
+    #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_GC_hl), color='red',
                          #linestyle='dashed',linewidth=1)
-    fitaxPb_triple.errorbar(Pb212_HPGe_halflives, Pb212_HPGe_LN, yerr=Pb212_HPGe_LN_err,xerr=None, color='red', ls='none',
+    fitaxPb_triple.errorbar(Pb212_GC_halflives, Pb212_GC_LN, yerr=Pb212_GC_LN_err,xerr=None, color='red', ls='none',
                              capsize=3, capthick=1,
-                             ecolor='black')
-    fitaxPb_triple.scatter(Pb212_halflives, Pb212_LN, linewidth=2.5, label='Optimized LSC', color='blue',s=15)
+                             ecolor='red')
+    fitaxPb_triple.scatter(Pb212_HPGe_halflives, Pb212_HPGe_LN, linewidth=2.5, label='HPGe', color='Black', s=100,
+                           marker='D')
+    # fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_GC_hl), color='red',
+    # linestyle='dashed',linewidth=1)
+    fitaxPb_triple.errorbar(Pb212_HPGe_halflives, Pb212_HPGe_LN, yerr=Pb212_HPGe_LN_err, xerr=None, color='Black', ls='none',
+                            capsize=3, capthick=1,
+                            ecolor='Black')
+    fitaxPb_triple.scatter(Pb212_halflives, Pb212_LN, linewidth=2.5, label='Optimized LSC', color='blue',s=100)
     #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_hl), color='blue',
                          #linestyle='dashed',linewidth=1)
     fitaxPb_triple.errorbar(Pb212_halflives, Pb212_LN, yerr=Pb212_LN_err,xerr=None, color='blue', ls='none',
                              capsize=3, capthick=1,
                              ecolor='blue')
+    fitaxPb_triple.scatter(Pb212_CBlood_halflives, Pb212_CBlood_LN, linewidth=2.5, label='Cleared Blood LSC', color='green',s=100,marker='s')
+    #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_CBlood_hl), color='green',
+                         #linestyle='dashed',linewidth=1)
+    fitaxPb_triple.errorbar(Pb212_CBlood_halflives, Pb212_CBlood_LN, yerr=Pb212_CBlood_LN_err,xerr=None, color='green', ls='none',
+                             capsize=3, capthick=1,
+                             ecolor='green')
+    fitaxPb_triple.set_xlabel('Half-Lives Since First Sample',fontsize=26)
+    fitaxPb_triple.set_ylabel('Ln(CPS/CPS$_{0}$)',fontsize=26)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+
+    fitaxPb_triple.legend(loc='upper right',fontsize=22)
+    #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.eps",
+                #format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.png",
+                format='png')
+    fitpltPb_triple.show()
+
+    #2 Pb curves together
+    #Cleared blood
+    #HPGe
+    #Give in terms of half-ves
+    xspace = np.linspace(0,  Pb212_CBlood_halflives[-1], 100)
+    scattersize = 1
+    fitpltPb_triple, fitaxPb_triple = plt.subplots(layout='constrained',figsize=(6,6))
+    fitaxPb_triple.scatter(Pb212_HPGe_halflives, Pb212_HPGe_LN, linewidth=2.5, label='Gamma Counter', color='red',s=15, marker='^')
+    #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_HPGe_hl), color='red',
+                         #linestyle='dashed',linewidth=1)
+    fitaxPb_triple.errorbar(Pb212_HPGe_halflives, Pb212_HPGe_LN, yerr=Pb212_HPGe_LN_err,xerr=None, color='red', ls='none',
+                             capsize=3, capthick=1,
+                             ecolor='red')
     fitaxPb_triple.scatter(Pb212_CBlood_halflives, Pb212_CBlood_LN, linewidth=2.5, label='Cleared Blood LSC', color='green',s=15,marker='s')
     #fitaxPb_triple.plot(xspace, LnCurve(xspace, *fit_paramPb_CBlood_hl), color='green',
                          #linestyle='dashed',linewidth=1)
     fitaxPb_triple.errorbar(Pb212_CBlood_halflives, Pb212_CBlood_LN, yerr=Pb212_CBlood_LN_err,xerr=None, color='green', ls='none',
                              capsize=3, capthick=1,
                              ecolor='green')
-    fitaxPb_triple.set_xlabel('Half-Lives Since First Sample')
-    fitaxPb_triple.set_ylabel('Ln(CPS/CPS$_{0}$)')
-    fitaxPb_triple.legend(loc='upper right')
+    fitaxPb_triple.set_xlabel('Half-Lives Since First Sample',fontsize=20)
+    fitaxPb_triple.set_ylabel('Ln(CPS/CPS$_{0}$)',fontsize=20)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.gca().set_box_aspect(1)
+
+    fitaxPb_triple.legend(loc='upper right',fontsize=18)
     #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_HPGe_DecayCurve_HalfLife.eps",
                 #format='eps')
     plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.png",
                 format='png')
     fitpltPb_triple.show()
+
+
+
+    #*********************************************
+    # Mouse urine
+    # Free Pb-212 24 hrs post injection. Mixed linear fit
+    FreePb212_24hrs_hours = [0,1.05,2.066666667,3.216666666,4.616666667,5.683333333]
+    FreePb212_24hrs_LNCPS = [0,-0.558656805,-1.021973177,-1.431056795,-1.764695143,-1.938435922]
+    FreePb212_24hrs_CPS = [11.21888889,6.416944444,4.0375,2.681944444,1.921111111,1.614722222]
+    FreePb212_24hrs_CPSErr = [0.05582435,0.042219481,0.033489219,0.027294405,0.023100692,0.02117862]
+
+    paramFPb = [10,10]
+
+    fit_paramFPb, fit_covFPb = curve_fit(Bi212TransEq, xdata = FreePb212_24hrs_hours, ydata = FreePb212_24hrs_CPS, maxfev = 100000)
+
+    print('')
+    print('Free Pb212 24 hrs post')
+    print('Activity 1: ', fit_paramFPb[0])
+    print('Half-life 1: ', np.log(2)/fit_paramFPb[1], ' hours')
+    print('A2/A1: ', fit_paramFPb[1]/fit_paramFPb[0])
+    print('Atomic ratio: ', (fit_paramFPb[1]/(np.log(2)/(60.551/60)))/(fit_paramFPb[0]/(np.log(2)/(10.628))))
+    #print('Activity 2: ', fit_paramFPb[2])
+   # print('Half-life 2: ', np.log(2)/fit_paramFPb[3], ' hours')
+
+    xspace = np.linspace(0,  FreePb212_24hrs_hours[-1], 100)
+
+    fitpltFPb, fitaxFPb = plt.subplots(layout='constrained')
+    fitaxFPb.scatter(FreePb212_24hrs_hours, FreePb212_24hrs_CPS, linewidth=2.5, label='Free $^{212}$Pb', color='black')
+    fitaxFPb.errorbar(FreePb212_24hrs_hours, FreePb212_24hrs_CPS, yerr=FreePb212_24hrs_CPSErr, color='black', ls='none', capsize=3, capthick=1,
+                        ecolor='black')
+    fitaxFPb.plot(xspace, Bi212TransEq(xspace, *fit_paramFPb), label='Composite Activity', color='red', linestyle='dashed')
+    fitaxFPb.plot(xspace,PbActivity(xspace, fit_paramFPb[0]), label='Pb Decay', color='blue', linestyle='dashed')
+    fitaxFPb.plot(xspace,BiActivity(xspace, fit_paramFPb[1]), label='Bi Decay', color='green', linestyle='dashed')
+    fitaxFPb.plot(xspace,BiGrowth(xspace, fit_paramFPb[0]), label='Bi Growth', color='purple', linestyle='dashed')
+
+
+    fitaxFPb.set_yscale('log')
+    fitaxFPb.set_xlabel('Time Since First Sample (Hours)')
+    fitaxFPb.set_ylabel('Activity (CPS)')
+    fitaxFPb.legend(loc='lower right')
+
+
+    fitpltFPb.show()
+
+    # Free Pb-212 48 hrs post injection.
+    FreePb212_48hrs_hours = [0,1,2,3.016666667,4.016666667]
+    FreePb212_48hrs_LNCPS = [0,-0.541953148,-1.013205473,-1.374945628,-1.659655767]
+    FreePb212_48hrs_CPS = [20.05444444,11.66388889,7.280833333,5.070833333,3.814444444]
+    FreePb212_48hrs_CPSErr = [0.074636982,0.056920727,0.044971699,0.037530852,0.032551005]
+
+    paramFPb = [10, 10]
+
+    fit_paramFPb48, fit_covFPb48 = curve_fit(Bi212TransEq, xdata=FreePb212_48hrs_hours, ydata=FreePb212_48hrs_CPS,
+                                         maxfev=100000)
+
+    print('')
+    print('Free Pb212 24 hrs post')
+    print('Activity 1: ', fit_paramFPb48[0])
+    print('Half-life 1: ', np.log(2) / fit_paramFPb48[1], ' hours')
+    print('A2/A1: ', fit_paramFPb48[1] / fit_paramFPb48[0])
+    print('Atomic ratio: ',
+          (fit_paramFPb48[1] / (np.log(2) / (60.551 / 60))) / (fit_paramFPb48[0] / (np.log(2) / (10.628))))
+    # print('Activity 2: ', fit_paramFPb[2])
+    # print('Half-life 2: ', np.log(2)/fit_paramFPb[3], ' hours')
+
+    xspace = np.linspace(0, FreePb212_48hrs_hours[-1], 100)
+
+    fitpltFPb48, fitaxFPb48 = plt.subplots(layout='constrained')
+    fitaxFPb48.scatter(FreePb212_48hrs_hours, FreePb212_48hrs_CPS, linewidth=2.5, label='Free $^{212}$Pb', color='black')
+    fitaxFPb48.errorbar(FreePb212_48hrs_hours, FreePb212_48hrs_CPS, yerr=FreePb212_48hrs_CPSErr, color='black', ls='none',
+                      capsize=3, capthick=1,
+                      ecolor='black')
+    fitaxFPb48.plot(xspace, Bi212TransEq(xspace, *fit_paramFPb48), label='Composite Activity', color='red',
+                  linestyle='dashed')
+    fitaxFPb48.plot(xspace, PbActivity(xspace, fit_paramFPb48[0]), label='Pb Decay', color='blue', linestyle='dashed')
+    fitaxFPb48.plot(xspace, BiActivity(xspace, fit_paramFPb48[1]), label='Bi Decay', color='green', linestyle='dashed')
+    fitaxFPb48.plot(xspace, BiGrowth(xspace, fit_paramFPb48[0]), label='Bi Growth', color='purple', linestyle='dashed')
+
+    fitaxFPb48.set_yscale('log')
+    fitaxFPb48.set_xlabel('Time Since First Sample (Hours)')
+    fitaxFPb48.set_ylabel('Activity (CPS)')
+    fitaxFPb48.legend(loc='lower right')
+
+    fitpltFPb48.show()
+
 
 main()

@@ -209,6 +209,8 @@ def main():
     plt.ylim(1,5000)
     plt.xlim(500,1750)
     #plt.legend()
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_SiSpect_Log_NoFit.eps", format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_SiSpect_Log_NoFit.png", format='png')
     plt_fit.show()
 
 

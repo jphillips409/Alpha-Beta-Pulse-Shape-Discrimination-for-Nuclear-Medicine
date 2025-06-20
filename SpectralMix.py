@@ -81,15 +81,16 @@ def main():
     mixvax.set_ylabel('Counts')
     mixplt.show()
 
+    Raperc = 0.05
     Acplt, Acax = plt.subplots(layout='constrained')
-    Acax.plot(xspace, 0.01 * TripleGaussFit(xspace, *Ra_params) + QuadGaussFit(xspace, *Ac_params), linewidth=2.5, label=r'Ac-225 + 1% Ra-223')
+    Acax.plot(xspace, Raperc * TripleGaussFit(xspace, *Ra_params) + QuadGaussFit(xspace, *Ac_params), linewidth=2.5, label=f'Ac-225 + {Raperc*100}% Ra-223')
     Acax.plot(xspace, QuadGaussFit(xspace, *Ac_params), linewidth=2.5, label=r'Ac-225')
 
     #plt.ylim(0,4000)
 
     Acax.set_xlabel('ADC Channel')
     Acax.set_ylabel('Counts')
-    Acax.legend('Upper left')
+    Acax.legend(loc='lower left')
     Acplt.show()
 
 

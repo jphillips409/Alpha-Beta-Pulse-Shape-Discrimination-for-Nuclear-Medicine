@@ -52,13 +52,13 @@ def main():
 
     # Make separate arrays
     alphaE_Ra = [5.6802, 6.6744, 7.3861]
-    alphaCH_Ra = [1745.8529, 2157.4374, 2561.8918]
+    alphaCH_Ra = [1607.82220, 1984.35620, 2352.770615]
 
     alphaE_Ac = [5.8089, 6.3081, 7.0669, 8.376]
-    alphaCH_Ac = [1768.6443, 2018.5875, 2462.4987, 3295.8456]
+    alphaCH_Ac = [1538.81858597, 1756.192378885, 2141.7904455, 2871.000363078]
 
     alphaE = [5.6802, 6.6744, 7.3861, 5.8089, 6.3081, 7.0669, 8.376]
-    alphaCH = [1745.8529, 2157.4374, 2561.8918, 1768.6443, 2018.5875, 2462.4987, 3295.8456]
+    alphaCH = [1607.82220, 1984.35620, 2352.770615, 1538.81858597, 1756.192378885, 2141.7904455, 2871.000363078]
 
     aplt, ax = plt.subplots(layout = 'constrained')
     ax.scatter(alphaE_Ra, alphaCH_Ra, linewidth = 2.5, label='Ra-223 Decay Chain')
@@ -69,7 +69,7 @@ def main():
     ax.legend(loc='upper left')
     aplt.show()
 
-    param = [500, -100, 0.000005, 1, 1]
+    param = [400, -100, 0.000005, 1, 1]
 
     fit_param, fit_cov = curve_fit(QuenchCal, xdata = alphaE, ydata = alphaCH, p0 = param, bounds=((0, -np.inf, -np.inf, -np.inf, -np.inf),(np.inf, np.inf, np.inf, np.inf, np.inf)), maxfev = 100000)
 
@@ -133,12 +133,26 @@ def main():
     fitplt_Pb_RaAc.show()
 
     # Calibration for channels to E
-    paramPb_flipped = [500, -100, -0.00000005, 1, 1]
+    paramPb_flipped = [500, 100, 0.00000005, 1, 1]
 
     fit_paramPb_flipped, fit_covPb_flipped = curve_fit(QuenchCal, xdata = alphaCH_Pb, ydata = alphaE_Pb, p0 = paramPb_flipped, bounds=((0, -np.inf, -np.inf, -np.inf, -np.inf),(np.inf, np.inf, np.inf, np.inf, np.inf)), maxfev = 100000)
 
     # Calculate the energy of the first peak
     Pb_peak1E = QuenchCal(412.662, *fit_paramPb_flipped)
     print(Pb_peak1E)
+
+    # Fits Ra223 and Ac225 Individually
+    xspace = np.linspace(alphaE_Ra[0],alphaE_Ra[-1], 100)
+    param = [200, -100, 0.000005, 1, 1]
+    fit_param_Ra, fit_cov_Ra = curve_fit(QuenchCal, xdata = alphaE_Ra, ydata = alphaCH_Ra, p0 = param, bounds=((0, -np.inf, -np.inf, -np.inf, -np.inf),(np.inf, np.inf, np.inf, np.inf, np.inf)), maxfev = 100000)
+    print("Ra223 Fit Parameters: ", fit_param_Ra)
+    fitplt_Ra, fitax_Ra = plt.subplots(layout = 'constrained')
+    fitax_Ra.scatter(alphaE_Ra, alphaCH_Ra, linewidth = 2.5, label='Ra-223 Decay Chain')
+    fitax_Ra.plot(xspace,QuenchCal(xspace,*fit_param_Ra), color='green')
+    fitax_Ra.set_xlabel('Decay Energy (MeV)')
+    fitax_Ra.set_ylabel('ADC Channel')
+
+    fitax_Ra.legend(loc='upper left')
+    plt.show()
 
 main()

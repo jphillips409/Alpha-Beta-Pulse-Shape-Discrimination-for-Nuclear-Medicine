@@ -110,23 +110,23 @@ def PSDcutB(Earr, PSDarr, psdval, UG):
     # iterates over the PSD array and filters for sloped gate
     for i in range(len(PSDarr)):
         # For regular Ultima Gold
-        if PSDarr[i] >= -0.00021973 * Earr[i] + 1 and PSDarr[i] >= psdval and (UG == 'R' or UG == 'AB'):
-            Filtarr.append(Earr[i])
-            trarr.append(i)
+        #if PSDarr[i] >= -0.00021973 * Earr[i] + 1 and PSDarr[i] >= psdval and (UG == 'R' or UG == 'AB'):
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
         # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
         #if PSDarr[i] >= -0.0002195685673 * Earr[i] + 1.32935 and PSDarr[i] >= psdval and PSDarr[i] <= 1 and UG == 'F':
          #   Filtarr.append(Earr[i])
           #  trarr.append(i)
         # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
-        #if PSDarr[i] >= -0.0006 * Earr[i] + 1 and PSDarr[i] >= psdval - 0.02:
-            #Filtarr.append(Earr[i])
-            #trarr.append(i)
+        if PSDarr[i] >= -0.0006 * Earr[i] + 1 and PSDarr[i] >= psdval - 0.02:
+            Filtarr.append(Earr[i])
+            trarr.append(i)
 
         # Optional version where you are below the mixed line and above 700 ADC - for debugging
         # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
-        if PSDarr[i] <= -0.0002195685673 * Earr[i] + 1.32935 and PSDarr[i] >= psdval and PSDarr[i] <= 1 and UG == 'F' and Earr[i] >= 700:
-            Filtarr.append(Earr[i])
-            trarr.append(i)
+        #if PSDarr[i] <= -0.0002195685673 * Earr[i] + 1.32935 and PSDarr[i] >= psdval and PSDarr[i] <= 1 and UG == 'F' and Earr[i] >= 700:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
 
     return Filtarr, trarr
 
@@ -147,14 +147,18 @@ def Ecut(Earr, PSDarr, Eval, low, high):
 # Function that accepts filtered energy data and returns a double Gaussian fit
 # Parameters go as amplitude, position, standard deviation
 # bl is a parameter for a constant baseline noise
-def DoubleGaussFit(x, a1, mu1, s1, a2, mu2, s2, bl):
+#def DoubleGaussFit(x, a1, mu1, s1, a2, mu2, s2, bl):
 
-    return a1 * np.exp(-((x - mu1)**2)/(2 * s1**2)) + a2 * np.exp(-((x - mu2)**2)/(2 * s2**2)) + bl
+    #return a1 * np.exp(-((x - mu1)**2)/(2 * s1**2)) + a2 * np.exp(-((x - mu2)**2)/(2 * s2**2)) + bl
 
 
 def GaussFit(x, a, mu, s):
 
     return a * np.exp(-((x - mu)**2)/(2 * s**2))
+
+def DoubleGaussFit(x, a, mu, s, a1, mu1, s1):
+
+    return GaussFit(x, a, mu, s) + GaussFit(x, a1, mu1, s1)
 
 def QuadGaussFit(x, a1, mu1, s1, a2, mu2, s2, a3, mu3, s3, a4, mu4, s4):
 
@@ -255,7 +259,7 @@ def main():
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_10a_t600_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_11a_t3600_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_11a_t5400_Uf.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_07_12a_t14400_Uf.csv'
+    data_file = r'SDataR_WF_Pb212_Ar_2024_07_12a_t14400_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_13a_t28800_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_14a_t28800_Uf.csv'
 
@@ -266,7 +270,7 @@ def main():
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UG_Blood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_17a_t480_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_18b_t1200_UG_CBlood.csv'
-    data_file = r'SDataR_WF_Pb212_Ar_2024_10_19a_t10800_UG_CBlood.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_10_19a_t10800_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_20a_t18000_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_21a_t21600_UG_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_22a_t28800_UG_CBlood.csv'
@@ -278,6 +282,36 @@ def main():
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UGf_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_17a_t480_UGf_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_18a_t1200_UGf_CBlood.csv'
+
+
+    # Mice urine 1.5 hrs post injection - 04/23/2025
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\Ap23_2025_1_5hrs_postinjection")
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23_t480_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23b_t480_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23c_t480_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23d_t480_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23e_t480_UG_Urine.csv'
+
+    # Mice urine 24 hrs post injection - 04/24/2025
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\Ap24_2025_24hrs_postinjection")
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_24_t60_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_24a_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_24b_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_24c_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_24d_t3600_UG_Urine.csv'
+
+
+    # Mice urine 48 hrs post injection - 04/25/2025
+    #ilepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\Ap25_2025_48hrs_postinjection")
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25_t60_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25a_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25b_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25c_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25d_t3600_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_25e_t3600_UG_Urine.csv'
+
+
+
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -308,9 +342,9 @@ def main():
 
     # Choose what type of Ultima Gold you are using
     #   R = Regular, AB, F = AB+F
-    UG = 'R'
+    #UG = 'R'
     #UG = 'AB'
-    #UG = 'F'
+    UG = 'F'
 
     # Array to check event type
     chantype = []
@@ -578,16 +612,22 @@ def main():
     # Plots the raw energy after removing cosmic rays - only channel 1
     # Also remove saturated events, i.e. E = 4095
     energy_nocosmic = np.array(energy_nocosmic)
+    psd_parameter_nocosmic = np.array(psd_parameter_nocosmic)
     energy_nocosmic_nosat = energy_nocosmic[energy_nocosmic < 4095]
     fig_rawE_nocosmic, ax_rawE_nocosmic = plt.subplots(layout = 'constrained')
     ax_rawE_nocosmic.hist(energy_nocosmic_nosat, bins=nbins, range = [0,4095])
-    ax_rawE_nocosmic.set_xlabel('ADC Channel')
-    ax_rawE_nocosmic.set_ylabel('Counts')
+    ax_rawE_nocosmic.set_xlabel('ADC Channel',fontsize=20)
+    ax_rawE_nocosmic.set_ylabel('Counts',fontsize=20)
     plt.ylim([0,2500])
     plt.xlim([0,4095])
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+
     if wavesdat is False:
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawE_NoCosmic.svg", format='svg')
+
     plt.show()
 
     # Plots the PSD parameter vs the energy after removing cosmic rays - only channel 1
@@ -596,8 +636,8 @@ def main():
     fig_psdE_nocosmic.colorbar(h[3],ax=ax_psdE_nocosmic)
     plt.ylim([0., 1.])
     #ax_psdE_nocosmic.set_title('Energy vs PSD Parameter without Cosmic Rays')
-    ax_psdE_nocosmic.set_ylabel('PSD parameter')
-    ax_psdE_nocosmic.set_xlabel('ADC Channel')
+    ax_psdE_nocosmic.set_ylabel('PSD parameter',fontsize=20)
+    ax_psdE_nocosmic.set_xlabel('ADC Channel',fontsize=20)
     plt.show()
 
     ############################################################################################################
@@ -606,12 +646,16 @@ def main():
     # Sets your A PSD gate - straight lines
     # Also returns an array containing the indices for the traces
     # Using regular Ultima Gold
-    PSDlowA = 0.16
-    PSDhighA = 0.35
+    PSDlowA = 0.13
+    PSDhighA = 0.25
 
     # Regular UG but with grease, cleared blood, and 24 ns short gate
     PSDlowA = 0.23
     PSDhighA = 0.4
+
+    # Regular UG but with grease, mouse urine, and 24 ns short gate
+    PSDlowA = 0.18
+    PSDhighA = 0.35
 
     # Using AB Ultima Gold
     if UG == 'AB': PSDlowA = 0.27
@@ -622,7 +666,7 @@ def main():
     if UG == 'F': PSDhighA = 0.43
 
     # If using UG AB + F and optical grease
-    if UG == 'F': PSDlowA = 0.26
+    if UG == 'F': PSDlowA = 0.27
     if UG == 'F': PSDhighA = 0.4
 
     energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
@@ -680,7 +724,7 @@ def main():
             axtr_A.plot(wavetime, traces_nocosmic[tracesind_filtA[i]], label=' trace', linewidth=2)
         #axtr_A.set_title('Traces in Cut A')
         axtr_A.set_ylabel('ADC Channel')
-        yStart = 8000
+        yStart = 7000
         yEnd = 14000
         axtr_A.set_xlabel('Time (ns)')
         axtr_A.set_xlim([75, 175])
@@ -731,15 +775,22 @@ def main():
 
         ftr_B, axtr_B = plt.subplots(layout = 'constrained')
         # Looks for traces that fall within the gate and plot them
+        print('length of B ', len(energy_filtB))
         for i in range(3):
             if i < len(energy_filtB): axtr_B.plot(wavetime, traces_nocosmic[tracesind_filtB[5+i]], label=' trace', linewidth=2)
         #axtr_B.set_title('Traces in cut B')
-        axtr_B.set_ylabel('ADC Channel')
-        axtr_B.set_xlabel('Time (ns)')
+        #axtr_B.text(50, 7600, r'$^{212}$Bi $\beta$',fontsize=15)
+        #axtr_B.text(250, 7600, r'$^{212}$Po $\alpha$',fontsize=15)
+        axtr_B.set_ylabel('Voltage (mV)', fontsize=20)
+        axtr_B.set_xlabel('Time (ns)', fontsize=20)
         axtr_B.set_xlim([xStart, xEnd * 2])
         axtr_B.set_ylim([yStart, yEnd])
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlphaMixed.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Wavefomrs_BetaAlphaMixed.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Wavefomrs_BetaAlphaMixed.svg", format='svg')
+
         plt.show(block=True)  # Don't block terminal by default.
 
         # Make a 2D hist for B traces
@@ -793,7 +844,7 @@ def main():
         index_AC = 0
         tracemaxA = np.abs(np.min(traces_nocosmic[tracesind_filtA[9]])) # find max alpha trace height
         for i in range(len(tracesind_filtC)):
-            if np.abs(np.min(traces_nocosmic[tracesind_filtC[i]]) - tracemaxA) < 5:
+            if np.abs(np.min(traces_nocosmic[tracesind_filtC[i]]) - tracemaxA) < 1:
                 index_AC = tracesind_filtC[i]
                 break
         # Plots an alpha and a beta trace
@@ -834,17 +885,21 @@ def main():
         axtr_AC_spline.plot(xAC_spline, yAC_spline_beta(xAC_spline), label='Beta Trace', linewidth = 2, color='orange')
         axtr_AC_spline.plot(xAC_LG, yAC_LG, linewidth = 2, color='blue')
         axtr_AC_spline.errorbar(xAC_LG, yAC_LG, yerr=capsAC_LG, color='blue', ls='none', elinewidth=2, ecolor='blue')
-        axtr_AC_spline.text(125, 8050, r'$Q_{Long}$', color='blue')
+        axtr_AC_spline.text(125, 8000, r'$Q_{Long}$', color='blue',fontsize=15)
         axtr_AC_spline.plot(xAC_SG, yAC_SG, linewidth=2, color='red')
         axtr_AC_spline.errorbar(xAC_SG, yAC_SG, yerr=capsAC_SG, color='red', ls='none', elinewidth=2, ecolor='red')
-        axtr_AC_spline.text(95, 7400, r'$Q_{Short}$', color='red')
-        axtr_AC_spline.set_ylabel('Voltage (mV)')
-        axtr_AC_spline.set_xlabel('Time (ns)')
+        axtr_AC_spline.text(95, 7400, r'$Q_{Short}$', color='red',fontsize=15)
+        axtr_AC_spline.set_ylabel('Voltage (mV)',fontsize=20)
+        axtr_AC_spline.set_xlabel('Time (ns)',fontsize=20)
         axtr_AC_spline.set_xlim([75, 175])
         axtr_AC_spline.set_ylim([7000, yEnd])
-        axtr_AC_spline.legend(loc='lower right')
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        axtr_AC_spline.legend(loc='center right',fontsize=18)
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha_Splined.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha_Splined.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Waveforms_BetaAlpha_Splined.svg", format='svg')
+
 
         # Draws the long and short gates if you want
         #LG_xline = np.linspace(86,196,2)
@@ -871,7 +926,7 @@ def main():
 
     # For a non-straight A cut
     #xline = np.linspace(0, (PSDlowA - 0.35) / (-0.0001166667),9)
-   # yline = np.full(len(xline), -0.0001166667 * xline + 0.35)
+    #yline = np.full(len(xline), -0.0001166667 * xline + 0.35)
     #xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442),9)
     #yline = np.full(len(xline), -0.0001442 * xline + 0.375)
     #xline = np.append(xline, 4096)
@@ -891,10 +946,10 @@ def main():
 
     #Draws the B cut
     # For regular Ultima Gold
-    xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
-    PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
-    xlineB = np.append(xlineB, 4096)
-    PSDlineB = np.append(PSDlineB, PSDhighA)
+    #xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
+    #PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
+    #xlineB = np.append(xlineB, 4096)
+    #PSDlineB = np.append(PSDlineB, PSDhighA)
 
     # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
     if UG == 'F':
@@ -910,7 +965,7 @@ def main():
     ElineC = np.full(len(yline), 400)
 
     fig_psdE2, ax_psdE2 = plt.subplots(layout = 'constrained')
-    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
+    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1, rasterized=True)
     fig_psdE2.colorbar(h2[3],ax=ax_psdE2)
     ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
     ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
@@ -918,12 +973,16 @@ def main():
     #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
     plt.ylim([0, 1])
     plt.xlim([0,4095])
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
 
-    ax_psdE2.set_ylabel('PSD parameter')
-    ax_psdE2.set_xlabel('ADC Channel')
+    ax_psdE2.set_ylabel('PSD parameter',fontsize=20)
+    ax_psdE2.set_xlabel('ADC Channel',fontsize=20)
     if wavesdat is False:
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_PSDvsE_Gates.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_PSDvsE_Gates.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_PSDvsE_Gates.svg", format='svg', dpi=300)
+
     plt.show()
 
     # Focus on the B cut region
@@ -943,11 +1002,13 @@ def main():
     # Plots the filtered energy data for cut A
     fig_filtEA, ax_filtEA = plt.subplots(layout = 'constrained')
     (data_entries, bins, patches) = ax_filtEA.hist(energy_filtA, bins=nbins, range = [0,4095])
-    ax_filtEA.set_xlabel('ADC Channel')
-    ax_filtEA.set_ylabel('Counts')
+    ax_filtEA.set_xlabel('ADC Channel',fontsize=20)
+    ax_filtEA.set_ylabel('Counts',fontsize=20)
    # ax_filtEA.set_yscale('log')
-    plt.xlim(0,2500) # With UG and Cleared Blood
-    #plt.ylim([0,20])
+    plt.xlim(0,3500) # With UG and Cleared Blood
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.ylim([0,4500])
     #plt.xlim(0,4095)
     if wavesdat is False:
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_AlphaGate.eps", format='eps')
@@ -991,6 +1052,41 @@ def main():
     print("")
 
     ############################################################################################################
+    # Stacks two plots on top of each other
+    #   PSD vs E with gates drawn
+    #   Spectra from region A
+    #Plots fit and 2d vertically together
+    fig = plt.figure(layout='constrained',figsize=(8,12))
+    gateAax_stack = fig.add_subplot(2,1,2)
+    PSDvsEax_stack = fig.add_subplot(2,1,1)
+    gateAax_stack.hist(energy_nocosmic, bins=nbins, range=[0, 4095])
+    #gateAax_stack.legend()
+    gateAax_stack.set_xlim(0,4095)
+    gateAax_stack.set_xlabel('ADC Channel',fontsize=24)
+    gateAax_stack.set_ylabel('Counts',fontsize=24)
+
+    h2 = PSDvsEax_stack.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
+    fig.colorbar(h2[3],ax=PSDvsEax_stack,fraction=0.046, pad=0.04)
+    #PSDvsEax_stack.plot(xline, PSDlowlineA, color='black', linewidth = 3)
+    #PSDvsEax_stack.plot(xline, PSDhighlineA, color='black', linewidth = 3)
+    #PSDvsEax_stack.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
+    plt.ylim([0, 1])
+    plt.xlim([0,4095])
+    PSDvsEax_stack.set_ylabel('PSD Parameter',fontsize=24)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+    ############################################################################################################
     # Fitting the alpha peaks
 
     # Get bin centers
@@ -1003,10 +1099,18 @@ def main():
     # Define range for each peak
     # For regular Ultima Gold
     lower_bound1 = 500
-    upper_bound1 = 1000
+    upper_bound1 = 1100
 
     lower_bound2 = 1000
-    upper_bound2 = 1500
+    upper_bound2 = 1800
+
+    # For regular Ultima Gold with optical grease and for mouse urine
+    # Might vary from sample to sample, probably due to mouse hydration
+    lower_bound1 = 600
+    upper_bound1 = 1300
+
+    lower_bound2 = 1300
+    upper_bound2 = 2200
 
     # For Ultima Gold AB
     if UG == 'AB':
@@ -1068,8 +1172,8 @@ def main():
 
     # Set parameter guesses
     # For regular Ultima Gold
-    p01 = ([2000, 800, 200])
-    p02 = ([2000, 1500, 100])
+    p01 = ([1000, 900, 200])
+    p02 = ([1000, 1700, 100])
 
     # For Ultima Gold AB
     if UG == 'AB':
@@ -1101,20 +1205,23 @@ def main():
 
     # Plots the hitogram and fitted function
     fitplt, fitax = plt.subplots(layout = 'constrained')
-    fitax.hist(energy_filtA, bins=nbins, range = [0,4095], label = 'PSD Filtered Energy')
+    fitax.hist(energy_filtA, bins=nbins, range = [0,4095], label = r'$\alpha$ Events')
     fitax.plot(xspace1, GaussFit(xspace1, *E_param1), linewidth = 2.5, label = r'$^{212}$Bi $\alpha$ fit')
     fitax.plot(xspace2, GaussFit(xspace2, *E_param2), linewidth = 2.5, label = r'$^{212}$Po $\alpha$ fit')
-    plt.legend()
-
-    plt.xlim(0,2500) # With UG and Cleared Blood
-    #plt.xlim(750,3000) # With F UG
+    plt.legend(loc='upper right',fontsize=18)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.xlim(0,4095) # With UG and Cleared Blood
+    plt.ylim(0,2500) # With F UG
     #plt.xlim(0,4095) # With F UG and optical grease
     #plt.ylim(0,20)
-    fitax.set_xlabel('ADC Channel')
-    fitax.set_ylabel('Counts')
+    fitax.set_xlabel('ADC Channel',fontsize=20)
+    fitax.set_ylabel('Counts',fontsize=20)
     if wavesdat is False:
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.svg", format='svg')
+
     plt.show()
 
     # Calculates the integral
@@ -1166,6 +1273,79 @@ def main():
     third_decay = ((950 < energy_filtA) & (energy_filtA < 1400)).sum()
     print("Events at ~ 700 peak between 550 and 950 ", fourth_decay, " % of Bi-212 alpha decays: ", fourth_decay/first_second_decay)
     print("Events at ~ 1200 peak between 950 and 1400 ", third_decay, " % of Bi-212 alpha decays: ", third_decay/first_second_decay)
+
+
+    #Plots the PSD parameter and fits with a Gaussian to extract the FOM
+    #Look only at events above a certain ADC threshold
+    #Only above 200 ADC for all alpha peaks
+    #psd_param_ADCfilt = psd_parameter_nocosmic[energy_nocosmic > 200]
+
+    #For specific alpha peaks
+    Bi212_low = E_param1[1] - abs(E_param1[2]*2.355)
+    Bi212_high = E_param1[1] + abs(E_param1[2]*2.355)
+    Po212_low = E_param2[1] - abs(E_param2[2]*2.355)
+    Po212_high = E_param2[1] + abs(E_param2[2]*2.355)
+    #psd_param_ADCfilt = psd_parameter_nocosmic[(energy_nocosmic > Bi212_low) & (energy_nocosmic < Bi212_high)] #Bi-212
+    psd_param_ADCfilt = psd_parameter_nocosmic[(energy_nocosmic > Po212_low) & (energy_nocosmic < Po212_high)] #Po-212
+
+    FOMplt, FOMax = plt.subplots(layout='constrained')
+    (data_entriesPSD, binsPSD, patchesPSD) = FOMax.hist(psd_param_ADCfilt, bins=nbins, range = [0,1])
+
+    # Get bin centers
+    bincentersPSD = np.array([0.5 * (binsPSD[i] + binsPSD[i + 1])  for i in range(len(binsPSD) - 1)])
+    # Find the bin width
+    binwidthPSD = binsPSD[1] - binsPSD[0]
+
+    # Define range for two Gauss fit
+    lower_boundPSD = 0.05
+    upper_boundPSD = 0.45
+
+    # For regular UG with no grease
+    #lower_boundPSD = 0
+    #upper_boundPSD = 0.3
+
+    # Get points for each bin center
+    xPSD = bincentersPSD[bincentersPSD>lower_boundPSD]
+    xPSD1 = xPSD[xPSD<upper_boundPSD]
+    xPSD1 = xPSD1.ravel()
+
+    yPSD = data_entriesPSD[bincentersPSD>lower_boundPSD]
+    yPSD = yPSD[xPSD<upper_boundPSD]
+    yPSD = yPSD.ravel()
+
+    # Set parameter guesses
+    p0PSD = ([8000, 0.17, 0.06,4000, 0.3, 0.06])
+
+    # Fits the data to double Gaussian and plots
+    E_paramPSD, E_covPSD = curve_fit(DoubleGaussFit, xdata = xPSD1, ydata = yPSD, p0 = p0PSD, bounds=((0,lower_boundPSD,-np.inf,0,lower_boundPSD,-np.inf),(np.inf,upper_boundPSD,np.inf,np.inf,upper_boundPSD,np.inf)), maxfev = 10000)
+    E_errPSD = np.sqrt(np.diag(E_covPSD))
+
+    xspacePSD = np.linspace(lower_boundPSD, upper_boundPSD, 1000)
+
+    #Plot fits
+    FOMax.plot(xspacePSD, DoubleGaussFit(xspacePSD, *E_paramPSD), linewidth = 2.5)
+    FOMax.plot(xspacePSD, GaussFit(xspacePSD, E_paramPSD[0], E_paramPSD[1], E_paramPSD[2]), linewidth = 2.5)
+    FOMax.plot(xspacePSD, GaussFit(xspacePSD, E_paramPSD[3], E_paramPSD[4], E_paramPSD[5]), linewidth = 2.5)
+
+    #plt.legend(loc='upper right', fontsize=18)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.xlim(0, 1)  # With UG and Cleared Blood
+    plt.ylim(0, 4000)  # With F UG
+    # plt.xlim(0,4095) # With F UG and optical grease
+    # plt.ylim(0,20)
+    FOMax.set_xlabel('PSD Parameter', fontsize=20)
+    FOMax.set_ylabel('Counts', fontsize=20)
+    plt.show()
+
+    #Prints out PSD Fit Information
+    print("PSD Parameter Fitting")
+    print("Beta amplitude: ", E_paramPSD[0])
+    print("Beta position: ", E_paramPSD[1])
+    print("Beta FWHM: ", abs(E_paramPSD[2]*2.355))
+    print("Alpha amplitude: ", E_paramPSD[3])
+    print("Alpha position: ", E_paramPSD[4])
+    print("Alpha FWHM: ", abs(E_paramPSD[5]*2.355))
 
 
     # Writes the data from the alpha PSD region to a file
