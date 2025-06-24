@@ -52,7 +52,7 @@ plt.rcParams['ytick.minor.right'] = True
 plt.rcParams['ytick.minor.left'] = True
 plt.rcParams['ytick.minor.visible'] = True
 
-plt.rcParams['font.size'] = 14
+plt.rcParams['font.size'] = 15
 plt.rcParams['axes.titlepad'] = 15
 
 
@@ -249,7 +249,7 @@ def main():
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212")
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212")
 
     #data_file = r'SDataR_WF_Pb212_Ar_2024_05_07_t60s.csv'
     #data_file =  r'SDataR_WF_Pb212_Ar_2024_05_07_t600.csv'
@@ -340,10 +340,10 @@ def main():
 
 
     # Mice urine 1.5 hrs post injection - 04/23/2025
-    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\Ap23_2025_1_5hrs_postinjection")
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\Ap23_2025_1_5hrs_postinjection")
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23_t480_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23b_t480_UG_Urine.csv'
-    #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23c_t480_UG_Urine.csv'
+    data_file = r'SDataR_WF_Pb212_Ar_2025_04_23c_t480_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23d_t480_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_04_23e_t480_UG_Urine.csv'
 
@@ -367,9 +367,9 @@ def main():
 
 
     # Mice urine w/ free Pb212 1 hr post injection - 05/14/2025
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\May14_2025_1hr_postinjection_nochelator")
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Pb212Mice\May14_2025_1hr_postinjection_nochelator")
     #data_file = r'SDataR_WF_Pb212_Ar_2025_05_14_t60_UG_Urine.csv'
-    data_file = r'SDataR_WF_Pb212_Ar_2025_05_14a_t1500_UG_Urine.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2025_05_14a_t1500_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_05_14b_t1500_UG_Urine.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2025_05_14c_t1500_UG_Urine.csv'
 
@@ -827,6 +827,41 @@ def main():
     print("")
 
 
+    ############################################################################################################
+    # Stacks two plots on top of each other
+    #   PSD vs E with gates drawn
+    #   Spectra from region A
+    #Plots fit and 2d vertically together
+    fig = plt.figure(layout='constrained',figsize=(8,12))
+    gateAax_stack = fig.add_subplot(2,1,2)
+    PSDvsEax_stack = fig.add_subplot(2,1,1)
+    gateAax_stack.hist(energy_nocosmic, bins=nbins, range=[0, 4095])
+    #gateAax_stack.legend()
+    gateAax_stack.set_xlim(0,4095)
+    gateAax_stack.set_xlabel('ADC Channel',fontsize=24)
+    gateAax_stack.set_ylabel('Counts',fontsize=24)
+
+    h2 = PSDvsEax_stack.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1, rasterized=True)
+    fig.colorbar(h2[3],ax=PSDvsEax_stack,fraction=0.046, pad=0.04)
+    #PSDvsEax_stack.plot(xline, PSDlowlineA, color='black', linewidth = 3)
+    #PSDvsEax_stack.plot(xline, PSDhighlineA, color='black', linewidth = 3)
+    #PSDvsEax_stack.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
+    plt.ylim([0, 1])
+    plt.xlim([0,4095])
+    PSDvsEax_stack.set_ylabel('PSD Parameter',fontsize=24)
+    #plt.xticks(fontsize=15)
+    #plt.yticks(fontsize=15)
+
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Stacked.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Stacked.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Stacked.svg", format='svg')
+
+    plt.show()
+
+    plt.show()
+
+
 
     ############################################################################################################
     # Fitting the alpha peaks
@@ -848,11 +883,11 @@ def main():
 
     # For regular Ultima Gold with optical grease and for mouse urine
     # Might vary from sample to sample, probably due to mouse hydration
-    lower_bound1 = 500
-    upper_bound1 = 1200
+    lower_bound1 = 700
+    upper_bound1 = 1400
 
-    lower_bound2 = 1200
-    upper_bound2 = 2100
+    lower_bound2 = 1500
+    upper_bound2 = 2400
 
     # For Ultima Gold AB
     if UG == 'AB':
@@ -954,7 +989,7 @@ def main():
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     plt.xlim(0,4095) # With UG and Cleared Blood
-    plt.ylim(0,1000) # With F UG
+    plt.ylim(0,2500) # With F UG
     #plt.xlim(0,4095) # With F UG and optical grease
     #plt.ylim(0,20)
     fitax.set_xlabel('ADC Channel',fontsize=20)
@@ -962,6 +997,8 @@ def main():
     if wavesdat is False:
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.eps", format='eps')
         plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Fit.svg", format='svg')
+
     plt.show()
 
     # Calculates the integral

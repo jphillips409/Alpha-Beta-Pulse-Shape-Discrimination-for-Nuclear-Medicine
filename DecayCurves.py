@@ -463,6 +463,8 @@ def main():
                 #format='eps')
     plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.png",
                 format='png')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.svg",
+                format='svg')
     fitpltPb_triple.show()
 
     #2 Pb curves together
@@ -501,6 +503,60 @@ def main():
 
     #*********************************************
     # Mouse urine
+    # Three Pb mouse urine curves together, chelated pb
+    # Give in terms of hours
+    Pb212_ChelatedUrine_1_5hrs = [0,1.216666667,2.266666667,3.1,4.033333333]
+    Pb212_ChelatedUrine_1_5hrs = np.array(Pb212_ChelatedUrine_1_5hrs)
+    Pb212_ChelatedUrine_1_5hrs_LN = [0,-0.813178174,-1.517221785,-2.046339348,-2.632374699]
+    Pb212_ChelatedUrine_1_5hrs_LN = np.array(Pb212_ChelatedUrine_1_5hrs_LN)
+    Pb212_ChelatedUrine_1_5hrs_LN_err = [0,0.001721186,0.004566384,0.00802412,0.01383641]
+
+    Pb212_ChelatedUrine_24hrs = [0,0.983333333,2.15,3.8,5.333333333]
+    Pb212_ChelatedUrine_24hrs = np.array(Pb212_ChelatedUrine_24hrs)
+    Pb212_ChelatedUrine_24hrs_LN = [0,-0.340889028,-1.123560343,-2.243375499,-3.252513196]
+    Pb212_ChelatedUrine_24hrs_LN = np.array(Pb212_ChelatedUrine_24hrs_LN)
+    Pb212_ChelatedUrine_24hrs_LN_err = [0,0.000904626,0.004409681,0.015412656,0.037010594]
+
+    Pb212_ChelatedUrine_48hrs = [0,1.033333333,2.05,3.083333333,4.083333333,5.083333333]
+    Pb212_ChelatedUrine_48hrs = np.array(Pb212_ChelatedUrine_48hrs)
+    Pb212_ChelatedUrine_48hrs_LN = [0,-0.350530553,-1.031150118,-1.732924117,-2.385944941,-3.001152341]
+    Pb212_ChelatedUrine_48hrs_LN = np.array(Pb212_ChelatedUrine_48hrs_LN)
+    Pb212_ChelatedUrine_48hrs_LN_err = [0,0.001321478,0.005463243,0.013040568,0.024887372,0.042579176]
+
+    scattersize = 1
+    fitpltPb_ChelatedUrine, fitaxPb_ChelatedUrine = plt.subplots(layout='constrained')
+    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_1_5hrs, Pb212_ChelatedUrine_1_5hrs_LN, linewidth=1, label='1.5 hrs Post Injection', color='red',
+                           marker='^')
+    fitaxPb_ChelatedUrine.errorbar(Pb212_ChelatedUrine_1_5hrs, Pb212_ChelatedUrine_1_5hrs_LN, yerr=Pb212_ChelatedUrine_1_5hrs_LN_err, xerr=None, color='red', ls='none',
+                            capsize=3, capthick=1,
+                            ecolor='red')
+    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_24hrs, Pb212_ChelatedUrine_24hrs_LN, linewidth=1, label='24 hrs Post Injection', color='Black',
+                           marker='D')
+    fitaxPb_ChelatedUrine.errorbar(Pb212_ChelatedUrine_24hrs, Pb212_ChelatedUrine_24hrs_LN, yerr=Pb212_ChelatedUrine_24hrs_LN_err, xerr=None, color='Black',
+                            ls='none',
+                            capsize=3, capthick=1,
+                            ecolor='Black')
+    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_48hrs, Pb212_ChelatedUrine_48hrs_LN, linewidth=1, label='48 hrs Post Injection', color='blue')
+    fitaxPb_ChelatedUrine.errorbar(Pb212_ChelatedUrine_48hrs, Pb212_ChelatedUrine_48hrs_LN, yerr=Pb212_ChelatedUrine_48hrs_LN_err, xerr=None, color='blue', ls='none',
+                            capsize=3, capthick=1,
+                            ecolor='blue')
+    fitaxPb_ChelatedUrine.set_xlabel('Hours Since First Sample')
+    fitaxPb_ChelatedUrine.set_ylabel('Ln(CPS/CPS$_{0}$)')
+
+    fitaxPb_ChelatedUrine.legend(loc='upper right')
+    # plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.eps",
+    # format='eps')
+   # plt.savefig(
+      #  r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.png",
+      #  format='png')
+   # plt.savefig(
+     #   r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.svg",
+      #  format='svg')
+    fitpltPb_ChelatedUrine.show()
+
+
+
+
     # Free Pb-212 24 hrs post injection. Mixed linear fit
     FreePb212_24hrs_hours = [0,1.05,2.066666667,3.216666666,4.616666667,5.683333333]
     FreePb212_24hrs_LNCPS = [0,-0.558656805,-1.021973177,-1.431056795,-1.764695143,-1.938435922]

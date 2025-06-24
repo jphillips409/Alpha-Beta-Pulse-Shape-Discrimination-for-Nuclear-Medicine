@@ -50,7 +50,7 @@ plt.rcParams['ytick.minor.right'] = True
 plt.rcParams['ytick.minor.left'] = True
 plt.rcParams['ytick.minor.visible'] = True
 
-plt.rcParams['font.size'] = 14
+plt.rcParams['font.size'] = 15
 plt.rcParams['axes.titlepad'] = 15
 
 
@@ -110,17 +110,17 @@ def PSDcutB(Earr, PSDarr, psdval, UG):
     # iterates over the PSD array and filters for sloped gate
     for i in range(len(PSDarr)):
         # For regular Ultima Gold
-        #if PSDarr[i] >= -0.00021973 * Earr[i] + 1 and PSDarr[i] >= psdval and (UG == 'R' or UG == 'AB'):
-            #Filtarr.append(Earr[i])
-            #trarr.append(i)
+        if PSDarr[i] >= -0.00021973 * Earr[i] + 1 and PSDarr[i] >= psdval and (UG == 'R' or UG == 'AB'):
+            Filtarr.append(Earr[i])
+            trarr.append(i)
         # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
         #if PSDarr[i] >= -0.0002195685673 * Earr[i] + 1.32935 and PSDarr[i] >= psdval and PSDarr[i] <= 1 and UG == 'F':
          #   Filtarr.append(Earr[i])
           #  trarr.append(i)
         # For Ultima Gold AB+F with a coarse gain of 10 fC/(lsb x Vpp)
-        if PSDarr[i] >= -0.0006 * Earr[i] + 1 and PSDarr[i] >= psdval - 0.02:
-            Filtarr.append(Earr[i])
-            trarr.append(i)
+        #if PSDarr[i] >= -0.0006 * Earr[i] + 1 and PSDarr[i] >= psdval - 0.02:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
 
         # Optional version where you are below the mixed line and above 700 ADC - for debugging
         # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
@@ -259,7 +259,7 @@ def main():
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_10a_t600_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_11a_t3600_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_11a_t5400_Uf.csv'
-    data_file = r'SDataR_WF_Pb212_Ar_2024_07_12a_t14400_Uf.csv'
+    #data_file = r'SDataR_WF_Pb212_Ar_2024_07_12a_t14400_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_13a_t28800_Uf.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_07_14a_t28800_Uf.csv'
 
@@ -279,7 +279,7 @@ def main():
 
 
     # Cleared blood sample with UGf
-    #data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UGf_CBlood.csv'
+    data_file = r'SDataR_WF_Pb212_Ar_2024_010_16a_t240_UGf_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_010_17a_t480_UGf_CBlood.csv'
     #data_file = r'SDataR_WF_Pb212_Ar_2024_10_18a_t1200_UGf_CBlood.csv'
 
@@ -342,9 +342,9 @@ def main():
 
     # Choose what type of Ultima Gold you are using
     #   R = Regular, AB, F = AB+F
-    #UG = 'R'
+    UG = 'R'
     #UG = 'AB'
-    UG = 'F'
+    #UG = 'F'
 
     # Array to check event type
     chantype = []
@@ -601,12 +601,18 @@ def main():
     E1cosmic = energy[channel == 1]
     PSD1cosmic = psd_parameter[channel == 1]
     fig_psdE_withcosmic, ax_psdE_withcosmic = plt.subplots(layout = 'constrained')
-    h = ax_psdE_withcosmic.hist2d(E1cosmic, PSD1cosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h = ax_psdE_withcosmic.hist2d(E1cosmic, PSD1cosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1, rasterized=True)
     fig_psdE_withcosmic.colorbar(h[3],ax=ax_psdE_withcosmic)
     plt.ylim([0., 1.])
     ax_psdE_withcosmic.set_title('Energy vs PSD Parameter with Cosmic Rays')
     ax_psdE_withcosmic.set_ylabel('PSD parameter')
     ax_psdE_withcosmic.set_xlabel('ADC Channel')
+
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawEvsPSD_NoCosmic_nogates.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawEvsPSD_NoCosmic_nogates.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_RawEvsPSD_NoCosmic_nogates.svg", format='svg', dpi=300)
+
     plt.show()
 
     # Plots the raw energy after removing cosmic rays - only channel 1
@@ -618,7 +624,7 @@ def main():
     ax_rawE_nocosmic.hist(energy_nocosmic_nosat, bins=nbins, range = [0,4095])
     ax_rawE_nocosmic.set_xlabel('ADC Channel',fontsize=20)
     ax_rawE_nocosmic.set_ylabel('Counts',fontsize=20)
-    plt.ylim([0,2500])
+    #plt.ylim([0,2500])
     plt.xlim([0,4095])
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
@@ -654,8 +660,8 @@ def main():
     PSDhighA = 0.4
 
     # Regular UG but with grease, mouse urine, and 24 ns short gate
-    PSDlowA = 0.18
-    PSDhighA = 0.35
+    #PSDlowA = 0.18
+    #PSDhighA = 0.35
 
     # Using AB Ultima Gold
     if UG == 'AB': PSDlowA = 0.27
@@ -946,10 +952,10 @@ def main():
 
     #Draws the B cut
     # For regular Ultima Gold
-    #xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
-    #PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
-    #xlineB = np.append(xlineB, 4096)
-    #PSDlineB = np.append(PSDlineB, PSDhighA)
+    xlineB = np.linspace(0, (PSDhighA - 1) / (-0.00021973),9)
+    PSDlineB = np.full(len(xlineB), -0.00021973 * xlineB + 1)
+    xlineB = np.append(xlineB, 4096)
+    PSDlineB = np.append(PSDlineB, PSDhighA)
 
     # For Ultima Gold AB+F with a coarse gain of 2.5 fC/(lsb x Vpp)
     if UG == 'F':
@@ -1059,22 +1065,30 @@ def main():
     fig = plt.figure(layout='constrained',figsize=(8,12))
     gateAax_stack = fig.add_subplot(2,1,2)
     PSDvsEax_stack = fig.add_subplot(2,1,1)
-    gateAax_stack.hist(energy_nocosmic, bins=nbins, range=[0, 4095])
+    gateAax_stack.hist(energy_filtA, bins=nbins, range=[0, 4095])
     #gateAax_stack.legend()
     gateAax_stack.set_xlim(0,4095)
     gateAax_stack.set_xlabel('ADC Channel',fontsize=24)
     gateAax_stack.set_ylabel('Counts',fontsize=24)
 
-    h2 = PSDvsEax_stack.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
+    h2 = PSDvsEax_stack.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1, rasterized=True)
     fig.colorbar(h2[3],ax=PSDvsEax_stack,fraction=0.046, pad=0.04)
-    #PSDvsEax_stack.plot(xline, PSDlowlineA, color='black', linewidth = 3)
-    #PSDvsEax_stack.plot(xline, PSDhighlineA, color='black', linewidth = 3)
-    #PSDvsEax_stack.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
+    PSDvsEax_stack.plot(xline, PSDlowlineA, color='black', linewidth = 3)
+    PSDvsEax_stack.plot(xline, PSDhighlineA, color='black', linewidth = 3)
+    PSDvsEax_stack.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
     plt.ylim([0, 1])
     plt.xlim([0,4095])
     PSDvsEax_stack.set_ylabel('PSD Parameter',fontsize=24)
-    plt.xticks(fontsize=15)
-    plt.yticks(fontsize=15)
+    #plt.xticks(fontsize=15)
+    #plt.yticks(fontsize=15)
+
+    if wavesdat is False:
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Stacked.eps", format='eps')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Stacked.png", format='png')
+        plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Stacked.svg", format='svg')
+
+    plt.show()
+
     plt.show()
 
 
