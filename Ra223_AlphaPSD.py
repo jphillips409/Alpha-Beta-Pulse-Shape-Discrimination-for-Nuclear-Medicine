@@ -112,7 +112,12 @@ def PSDcutA(low, high, Earr, PSDarr):
 
         # For a non-straight lower PSD gate with UG F
         #if PSDarr[i] >= -0.0001166667 * Earr[i] + 0.35 and PSDarr[i] >= low and PSDarr[i] <= high:
-        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
+       # if PSDarr[i] >= -0.0001442 * Earr[i] + 0.375 and PSDarr[i] >= low and PSDarr[i] <= high:
+            #Filtarr.append(Earr[i])
+            #trarr.append(i)
+
+        # For regular UG (I think) with Xofigo
+        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.25 and PSDarr[i] >= low and PSDarr[i] <= high:
             Filtarr.append(Earr[i])
             trarr.append(i)
 
@@ -209,7 +214,7 @@ def main():
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_27b_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_28a_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_28b_t60_Uf.csv'
-    data_file = r'SDataR_WF_Ra223_Ar_2024_07_10a_t180_Uf.csv'
+    #data_file = r'SDataR_WF_Ra223_Ar_2024_07_10a_t180_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_07_12a_t240_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_07_14a_t300_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_2a_t1200_Uf.csv'
@@ -221,6 +226,20 @@ def main():
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_13a_t1800_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_14a_t1800_Uf.csv'
 
+    # Xofigo data
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Xofigo")
+    # Sample A
+    #data_file = r'SampleA\SDataR_WF_Ra223_Ar_2025_11_06b_t10800_UG_saliva_A.csv'
+    #data_file = r'SampleA\SDataR_WF_Ra223_Ar_2025_11_07c_t25200_UG_saliva_A.csv'
+    # Sample B
+    #data_file = r'SampleB\SDataR_WF_Ra223_Ar_2025_11_06a_t60_UG_saliva_B.csv'
+    data_file = r'SampleB\SDataR_WF_Ra223_Ar_2025_11_06b_t7200_UG_saliva_B.csv'
+    # Sample C
+    #data_file = r'SampleC\SDataR_WF_Ra223_Ar_2025_11_06a_t60_UG_saliva_C.csv'
+    #data_file = r'SampleC\SDataR_WF_Ra223_Ar_2025_11_06b_t7200_UG_saliva_C.csv'
+    # Sample D
+    #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_05a_t60_Ug_saliva_D.csv'
+    #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_05b_t7200_Ug_saliva_D.csv'
 
 
     # Now joins the path and file
@@ -252,9 +271,9 @@ def main():
 
     # Choose what type of Ultima Gold you are using
     #   R = Regular, AB, F = AB+F
-    #UG = 'R'
+    UG = 'R'
     #UG = 'AB'
-    UG = 'F'
+    #UG = 'F'
 
     # Array to check event type
     chantype = []
@@ -513,7 +532,7 @@ def main():
     E1cosmic = energy[channel == 1]
     PSD1cosmic = psd_parameter[channel == 1]
     fig_psdE_withcosmic, ax_psdE_withcosmic = plt.subplots(layout = 'constrained')
-    h = ax_psdE_withcosmic.hist2d(E1cosmic, PSD1cosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h = ax_psdE_withcosmic.hist2d(E1cosmic, PSD1cosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
     fig_psdE_withcosmic.colorbar(h[3],ax=ax_psdE_withcosmic)
     plt.ylim([0., 1.])
     ax_psdE_withcosmic.set_title('Energy vs PSD Parameter with Cosmic Rays')
@@ -523,7 +542,7 @@ def main():
 
     # Plots the PSD parameter vs the energy after removing cosmic rays - only channel 1
     fig_psdE_nocosmic, ax_psdE_nocosmic = plt.subplots(layout = 'constrained')
-    h = ax_psdE_nocosmic.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.Normalize(), cmin = 1)
+    h = ax_psdE_nocosmic.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
     fig_psdE_nocosmic.colorbar(h[3],ax=ax_psdE_nocosmic)
     plt.ylim([0., 1.])
     #ax_psdE_nocosmic.set_title('Energy vs PSD Parameter without Cosmic Rays')
@@ -539,6 +558,10 @@ def main():
     # Using regular Ultima Gold
     PSDlowA = 0.13
     PSDhighA = 0.25
+
+    # For Xofigi
+    PSDlowA = 0.15
+    PSDhighA = 0.27
 
     # Using AB Ultima Gold
     if UG == 'AB': PSDlowA = 0.27
@@ -694,8 +717,14 @@ def main():
     #PSDlowlineA = np.full(len(xline), PSDlowA)
     PSDhighlineA = np.full(len(xline), PSDhighA)
 
-    xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442), 9)
-    yline = np.full(len(xline), -0.0001442 * xline + 0.375)
+   # xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442), 9)
+   # yline = np.full(len(xline), -0.0001442 * xline + 0.375)
+    #xline = np.append(xline, 4096)
+   # PSDlowlineA = np.append(yline, PSDlowA)
+
+    #For Xofigo sample B
+    xline = np.linspace(0, (PSDlowA - 0.25) / (-0.0001442), 9)
+    yline = np.full(len(xline), -0.0001442 * xline + 0.25)
     xline = np.append(xline, 4096)
     PSDlowlineA = np.append(yline, PSDlowA)
 
@@ -813,6 +842,10 @@ def main():
     lower_bound2 = 1200
     upper_bound2 = 1800
 
+    # For Xifogo saliva samples
+    lower_bound = 600
+    upper_bound = 1800
+
     # For Ultima Gold AB
     if UG == 'AB':
         lower_bound1 = 700
@@ -856,6 +889,7 @@ def main():
     # For regular Ultima Gold
     p01 = ([2000, 800, 200])
     p02 = ([2000, 1500, 100])
+    p0trip = ([ 500, 800, 95, 2000, 1000, 200, 1000, 1500, 80, 20])
 
     # For Ultima Gold AB
     if UG == 'AB':
@@ -878,9 +912,18 @@ def main():
     #p01 = ([2000, 325, 200])
     #p02 = ([2000, 600, 100])
 
+    # Calculate the uncertainty of each bin height using sqrt(N)
+    sigmay = np.sqrt(y)
+
     # Fits the data to 3 Gaussians and plots
-    E_param, Ecov = curve_fit(TripleGaussFit, xdata = x, ydata = y, p0 = p0trip, bounds=((0,0,-np.inf,0,0,-np.inf,0,0,-np.inf,0),(np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf)), maxfev = 10000)
+    E_param, Ecov = curve_fit(TripleGaussFit, xdata = x, ydata = y, sigma=sigmay, p0 = p0trip, bounds=((0,0,0,0,0,0,0,0,0,0),(np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf,np.inf)), maxfev = 10000)
     E_err = np.sqrt(np.diag(Ecov))
+
+    # Calculate Chi2 using residuals
+    modely = TripleGaussFit(x,*E_param)
+    resid = y - modely
+    chi2 = np.sum((resid/sigmay)**2)
+    print('Chi2 value with sigma=sqrt(N): ', chi2)
 
     print('Triplet fit params: ', E_param)
 
@@ -896,8 +939,8 @@ def main():
     plt.legend(loc='upper right',fontsize=12)
 
     #plt.xlim(0,3000)
-    plt.xlim(0,4095) # if using optical grease
-    plt.ylim(0,7000)
+    plt.xlim(0,2500) # if using optical grease
+    plt.ylim(0,3000)
     fitax.set_xlabel('ADC Channel',fontsize=20)
     fitax.set_ylabel('Counts',fontsize=20)
     plt.xticks(fontsize=15)
@@ -912,7 +955,7 @@ def main():
     GInt2, GIntErr2 = quad(GaussFit,lower_bound, upper_bound, args=(E_param[3], E_param[4], E_param[5]))
     GInt3, GIntErr3 = quad(GaussFit,lower_bound, upper_bound, args=(E_param[6], E_param[7], E_param[8]))
 
-    # Correct integrals for bin width
+    # Correct integrals for bin width (Don't do this? Need to investigate)
     GInt1 = GInt1/binwidth
     GInt2 = GInt2/binwidth
     GInt3 = GInt3/binwidth
@@ -982,7 +1025,7 @@ def main():
     fitax_quad2 = fig.add_subplot(2,1,1)
     #plt.xticks(fontsize=15)
     #plt.yticks(fontsize=15)
-    fitax_quad.hist(energy_filtA, bins=nbins, range=[0, 4095], label=r'$\alpha$ Events')
+    fitax_quad.hist(energy_filtA, bins=nbins, range=[0, 4095], label=r'$\alpha$ Events',rasterized=True)
     fitax_quad.plot(xspace, TripleGaussFit(xspace, *E_param), linewidth=2.5, label=r'3 Gaussian Fit')
     fitax_quad.plot(xspace, GaussFit(xspace, E_param[3], E_param[4], E_param[5]), linewidth=2.5, label=r'$^{223}$Ra $\alpha$ fit')
     fitax_quad.plot(xspace, GaussFit(xspace, E_param[0], E_param[1], E_param[2]), linewidth=2.5, label=r'$^{219}$Rn + $^{211}$Bi $\alpha$ fit')
