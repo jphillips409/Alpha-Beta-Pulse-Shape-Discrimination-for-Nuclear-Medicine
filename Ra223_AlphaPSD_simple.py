@@ -69,10 +69,59 @@ def Unpack(name, alldat, waves):
 
     return data
 
+# Function to return x and y arrays for the PSD lines
+# This makes it easier to calculate gates and automates some of it
+# Stores the equations for the non-straight PSD lines
+def GetLineA(low,high,straight,UG):
+
+    if straight == True:
+        xlinelow = np.linspace(0, 4095, 18)
+        xlinehigh= np.linspace(0, 4095, 18)
+        ylinelow = np.linspace(low, low, 18)
+        ylinehigh = np.linspace(high, high, 18)
+        return xlinelow, xlinehigh, ylinelow, ylinehigh
+
+    if straight == False:
+
+        # Default for Ra223 non-biological
+        if UG == 'F':
+            xlinehigh = np.linspace(0, 4095, 18)
+            ylinehigh = np.linspace(high, high, 18)
+
+            inflectpoint = (low - 0.25) / (-0.0001442)
+            xlinelow = np.linspace(0, inflectpoint, 9)
+            addedpoints = np.linspace(inflectpoint * 1.1, 4096, 9)
+            xlinelow = np.append(xlinelow, addedpoints)
+
+            ylinelow = np.full(len(xlinelow), -0.0001442 * xlinelow + 0.25)
+            addedPSD = np.linspace(low, low, 9)
+            ylinelow = np.append(ylinelow, addedPSD)
+
+            return xlinelow, xlinehigh, ylinelow, ylinehigh
+
+        # For Ra223 saliva samples. Mixed with regular UG
+        # Straight high line, non-straight low line
+        if UG == 'Xofigo':
+            slope = -0.0001442
+            b = 0.25
+            xlinehigh = np.linspace(0, 4095, 18)
+            ylinehigh = np.linspace(high, high, 18)
+
+            inflectpoint = (low - b) / slope
+            xlinelow = np.linspace(0, inflectpoint, 9)
+            ylinelow = np.full(len(xlinelow), slope * xlinelow + 0.25)
+            addedpoints = np.linspace(inflectpoint * 1.1, 4096, 9)
+            xlinelow = np.append(xlinelow, addedpoints)
+
+            addedPSD = np.linspace(low, low, 9)
+            ylinelow = np.append(ylinelow, addedPSD)
+
+            return xlinelow, xlinehigh, ylinelow, ylinehigh
+
 # Functions to accept and output an energy array given PSD gates and the PSD array
 # For cut A - straight lines
 # return trace array indices so that you can look at those waveforms
-def PSDcutA(low, high, Earr, PSDarr):
+def PSDcutA(low, high, Ethresh, Earr, PSDarr):
     Filtarr = []
     trarr = []
 
@@ -89,7 +138,7 @@ def PSDcutA(low, high, Earr, PSDarr):
             #trarr.append(i)
 
         # For regular UG (I think) with Xofigo
-        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.25 and PSDarr[i] >= low and PSDarr[i] <= high:
+        if PSDarr[i] >= -0.0001442 * Earr[i] + 0.25 and PSDarr[i] >= low and PSDarr[i] <= high and Earr[i] > Ethresh:
             Filtarr.append(Earr[i])
             trarr.append(i)
 
@@ -124,19 +173,44 @@ def PSDcutB(Earr, PSDarr, psdval, UG):
 
     return Filtarr, trarr
 
+# Returns the opposite of the A lower gate
+def PSDcutC(xline,highline, low, Ethresh, Earr, PSDarr):
+    Filtarr = []
+    trarr = []
+    psd_Filtarr = []
+
+    # iterates over the PSD array and filters for the high and low gates
+    for i in range(len(PSDarr)):
+        # Cross product to find if point above/below line
+        # Cross product >= 0 means below or on line
+        for j in range(1,len(highline)):
+            if Earr[i] >= xline[j-1] and Earr[i] <= xline[j]:
+                v1 = (xline[j]-xline[j-1],highline[j]-highline[j-1])
+                v2 = (xline[j] - Earr[i], highline[j] - PSDarr[i])
+                PSDcross = v1[0]*v2[1] - v1[1]*v2[0]
+
+        if PSDcross >= 0 and Earr[i] > Ethresh and PSDarr[i] > low:
+            Filtarr.append(Earr[i])
+            psd_Filtarr.append(PSDarr[i])
+            trarr.append(i)
+
+    return Filtarr, trarr,psd_Filtarr
+
 # Make an energy cut for a psd region
 # return trace array indices so that you can look at those waveforms
 def Ecut(Earr, PSDarr, Eval, low, high):
     Filtarr = []
+    psd_Filtarr = []
     trarr = []
 
     # iterates over the PSD array and filters for sloped gate
     for i in range(len(Earr)):
         if Earr[i] >= Eval and PSDarr[i] >= low and PSDarr[i] <= high:
             Filtarr.append(Earr[i])
+            psd_Filtarr.append(PSDarr[i])
             trarr.append(i)
 
-    return Filtarr, trarr
+    return Filtarr, trarr, psd_Filtarr
 
 # Function that accepts filtered energy data and returns a double Gaussian fit
 # Parameters go as amplitude, position, standard deviation
@@ -171,7 +245,7 @@ def main():
     # Constant filepath variable to get around the problem of backslashes in windows
     # The Path library will use forward slashes but convert them to correctly treat your OS
     # Also makes it easier to switch to a different computer
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ra223")
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Ra223")
 
     #data_file = r'DataR_WF_Ra223_Ar_2024_06_21a_t60_Uf.csv'
     #data_file = r'SDataR_WF_Ra223_Ar_2024_06_22a_t60_Uf.csv'
@@ -193,26 +267,50 @@ def main():
     #data_file = r'SDataR_WF_Ra223_Ar_2024_08_14a_t1800_Uf.csv'
 
     # Xofigo data
-    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Xofigo")
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Xofigo\Patient_11_5_25") # From 11_5_25 patient
     # Sample A
     #data_file = r'SampleA\SDataR_WF_Ra223_Ar_2025_11_06b_t10800_UG_saliva_A.csv'
     #data_file = r'SampleA\SDataR_WF_Ra223_Ar_2025_11_07c_t25200_UG_saliva_A.csv'
+    #data_file = r'SampleA\SDataR_WF_Ra223_Ar_2025_11_13d_t28800_UG_saliva_A.csv'
+    #data_file = r'SampleA\SDataR_WF_Ra223_Ar_2025_11_24e_t28800_UG_saliva_A.csv'
+    #data_file = r'SampleA\SDataR_WF_Ra223_Ar_2025_12_05i_t28800_UG_saliva_A.csv'
     # Sample B
     #data_file = r'SampleB\SDataR_WF_Ra223_Ar_2025_11_06a_t60_UG_saliva_B.csv'
-    data_file = r'SampleB\SDataR_WF_Ra223_Ar_2025_11_06b_t7200_UG_saliva_B.csv'
+    #data_file = r'SampleB\SDataR_WF_Ra223_Ar_2025_11_06b_t7200_UG_saliva_B.csv'
     #data_file = r'SampleB\SDataR_WF_Ra223_Ar_2025_11_14c_t10800_UG_saliva_B.csv'
     # Sample C
     #data_file = r'SampleC\SDataR_WF_Ra223_Ar_2025_11_06a_t60_UG_saliva_C.csv'
-   # data_file = r'SampleC\SDataR_WF_Ra223_Ar_2025_11_06b_t7200_UG_saliva_C.csv'
+    #data_file = r'SampleC\SDataR_WF_Ra223_Ar_2025_11_06b_t7200_UG_saliva_C.csv'
     # Sample D
     #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_05a_t60_Ug_saliva_D.csv'
-    #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_05b_t7200_Ug_saliva_D.csv'
+   # data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_05b_t7200_Ug_saliva_D.csv'
     #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_20d_t120_UG_saliva_D.csv'
     #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_20e_t300_UG_saliva_D.csv'
     #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_20f_t600_UG_saliva_D.csv'
     #data_file = r'SampleD\SDataR_WF_Ra223_Ar_2025_11_20g_t1200_UG_saliva_D.csv'
 
+    filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Xofigo\Patient_11_26_25") # From 11_26_25 patient
+    # Sample E
+    #data_file = r'SampleE\SDataR_WF_Ra223_Ar_2025_12_01a_t28800_UG_saliva_E.csv'
+    #data_file = r'SampleE\SDataR_WF_Ra223_Ar_2025_12_12b_t28800_UG_saliva_E.csv'
+    # Sample F
+    #data_file = r'SampleF\SDataR_WF_Ra223_Ar_2025_11_26a_t60_UG_saliva_F.csv'
+    data_file = r'SampleF\SDataR_WF_Ra223_Ar_2025_11_26a_t1800_UG_saliva_F.csv'
+    #data_file = r'SampleF\SDataR_WF_Ra223_Ar_2025_11_26c_t1800_UG_saliva_F.csv'
+    #data_file = r'SampleF\SDataR_WF_Ra223_Ar_2025_12_02d_t7200_UG_saliva_F.csv'
+    #data_file = r'SampleF\SDataR_WF_Ra223_Ar_2025_12_08e_t10800_UG_saliva_F.csv'
+    # Sample G
+    #data_file = r'SampleG\SDataR_WF_Ra223_Ar_2025_12_02a_t60_UG_saliva_G.csv'
+    #data_file = r'SampleG\SDataR_WF_Ra223_Ar_2025_12_02a_t7200_UG_saliva_G.csv'
+    #data_file = r'SampleG\SDataR_WF_Ra223_Ar_2025_12_08c_t10800_UG_saliva_G.csv'
+    # Sample H
+    #data_file = r'SampleH\SDataR_WF_Ra223_Ar_2025_12_02a_t60_UG_saliva_H.csv'
+    #data_file = r'SampleH\SDataR_WF_Ra223_Ar_2025_12_02b_t7200_UG_saliva_H.csv'
+    #data_file = r'SampleH\SDataR_WF_Ra223_Ar_2025_12_09c_t10800_UG_saliva_H.csv'
 
+    #filepath = Path(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Xofigo\Patient_12_9_25") # From 11_26_25 patient
+    # Sample E
+    #data_file = r'SampleI\SDataR_WF_Ra223_Ar_2025_12_11a_t28800_UG_saliva_I.csv'
 
     # Now joins the path and file
     file_to_open = filepath / data_file
@@ -243,9 +341,11 @@ def main():
 
     # Choose what type of Ultima Gold you are using
     #   R = Regular, AB, F = AB+F
-    UG = 'R'
+    #   Xofigo = regular with saliva
+    #UG = 'R'
     #UG = 'AB'
     #UG = 'F'
+    UG = 'Xofigo'
 
     # Array to check event type
     chantype = []
@@ -374,7 +474,7 @@ def main():
 
     # If pairs are found, plot the delta-T distribution and make a time cut
     if len(channel_pairs) > 0:
-        dTf, dTax = plt.subplots(layout = 'constrained')
+        dTf, dTax = plt.subplots()
         dTax.set_title(r'$\Delta$T Distribution')
         dTax.set_ylabel('Counts')
         dTax.set_xlabel(r'Time (ps)')
@@ -427,7 +527,7 @@ def main():
     nbins = 512
 
     # Plots the raw spectrum
-    fig_rawE, ax_rawE = plt.subplots(layout = 'constrained')
+    fig_rawE, ax_rawE = plt.subplots()
     ax_rawE.hist(energy, bins=nbins, range=[0,4095])
     ax_rawE.set_title('Raw ADC Channel')
     ax_rawE.set_xlabel('ADC Channel')
@@ -435,7 +535,7 @@ def main():
     plt.show()
 
     # Plots the raw PSD parameter
-    fig_PSD, ax_PSD = plt.subplots(layout = 'constrained')
+    fig_PSD, ax_PSD = plt.subplots()
     ax_PSD.hist(psd_parameter,bins=nbins, range = [0,1])
     ax_PSD.set_title('Raw PSD Parameter')
     ax_PSD.set_xlabel('PSD Parameter')
@@ -449,12 +549,13 @@ def main():
     # Sets your A PSD gate - straight lines
     # Also returns an array containing the indices for the traces
     # Using regular Ultima Gold
-    #PSDlowA = 0.13
-    #PSDhighA = 0.25
+    PSDlowA = 0.13
+    PSDhighA = 0.25
 
     # For Xofigo
-    PSDlowA = 0.15
-    PSDhighA = 0.27
+    if UG == 'Xofigo':
+        PSDlowA = 0.14
+        PSDhighA = 0.28
 
     # Using AB Ultima Gold
     if UG == 'AB': PSDlowA = 0.27
@@ -464,14 +565,18 @@ def main():
     if UG == 'F': PSDlowA = 0.21
     if UG == 'F': PSDhighA = 0.37
 
-    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, energy_nocosmic, psd_parameter_nocosmic)
+    # Gets the lines for PSD gate A
+    xline, xlinehigh, PSDlowlineA, PSDhighlineA = GetLineA(PSDlowA,PSDhighA,False,UG)
+
+
+    energy_filtA, tracesind_filtA = PSDcutA(PSDlowA, PSDhighA, 50, energy_nocosmic, psd_parameter_nocosmic)
     print("Events that have a non-zero energyshort and energylong: ", len(energy_nocosmic))
     print("Events inside the PSD cut A: ", len(energy_filtA))
 
     energy_filtA = np.array(energy_filtA)
 
     # Counts the number of events inside cut A above a certain energy
-    Alpha_filtA_Ecut = 1100
+    Alpha_filtA_Ecut = 600
     Alpha_filtA = ((Alpha_filtA_Ecut < energy_filtA)).sum()
     print("Number of alpha events above ", Alpha_filtA_Ecut, " ADC channels: ", Alpha_filtA)
 
@@ -484,28 +589,13 @@ def main():
     energy_filtB = np.array(energy_filtB)
 
 
-    # Sets an energy gate for mixed beta/alpha that don't fall into the short gate
-    # E cut set to 1200, psd cut set to PSDlowA
-    # Also returns an array containing the indices for the traces
-    # Using regular Ultima Gold
-    PSDlowC = 0.0
-
-    #Using Ultima Gold AB+F
-    #PSDlowC = 0.1
-    PSDhighC = PSDlowA
-
-    energy_filtC, tracesind_filtC = Ecut(energy_nocosmic, psd_parameter_nocosmic, 150, PSDlowC, PSDhighC)
-    print("Events inside the energy cut (C): ", len(energy_filtC))
-    print("Rate of events inside cut C (/s): ", len(energy_filtC) / (runtime))  # Use the run time
-    print("")
-    energy_filtC = np.array(energy_filtC)
-
     # Plots the PSD parameter vs the energy with the cut
     # Draws the straight A cuts
-    xline = np.linspace(0,4096,10)
-    yline = np.linspace(0,PSDlowA,10)
-    #PSDlowlineA = np.full(len(xline), PSDlowA)
-    PSDhighlineA = np.full(len(xline), PSDhighA)
+    #xline = np.linspace(0,4096,10)
+    #yline = np.linspace(0,PSDlowA,10)
+    ##PSDlowlineA = np.full(len(xline), PSDlowA)
+    #xlinehigh = np.linspace(0,4096,10)
+    #PSDhighlineA = np.full(len(xlinehigh), PSDhighA)
 
    # xline = np.linspace(0, (PSDlowA - 0.375) / (-0.0001442), 9)
    # yline = np.full(len(xline), -0.0001442 * xline + 0.375)
@@ -513,10 +603,13 @@ def main():
    # PSDlowlineA = np.append(yline, PSDlowA)
 
     #For Xofigo sample B
-    xline = np.linspace(0, (PSDlowA - 0.25) / (-0.0001442), 9)
-    yline = np.full(len(xline), -0.0001442 * xline + 0.25)
-    xline = np.append(xline, 4096)
-    PSDlowlineA = np.append(yline, PSDlowA)
+    #inflectpoint = (PSDlowA - 0.25) / (-0.0001442)
+    #xline = np.linspace(0, (PSDlowA - 0.25) / (-0.0001442), 9)
+    #yline = np.full(len(xline), -0.0001442 * xline + 0.25)
+    #addedpoints = np.linspace(inflectpoint*1.1,4096,9)
+    #addedPSD = np.linspace(PSDlowA,PSDlowA,9)
+    #xline = np.append(xline, addedpoints)
+    #PSDlowlineA = np.append(yline, addedPSD)
 
     #Draws the B cut
     # For regular Ultima Gold
@@ -536,34 +629,74 @@ def main():
         xlineB = np.append(xlineB, 4096)
         PSDlineB = np.append(PSDlineB, PSDhighA)
 
-    ElineC = np.full(len(yline), 150)
+    # Sets an energy gate for mixed beta/alpha that don't fall into the short gate
+    # E cut set to 1200, psd cut set to PSDlowA
+    # Also returns an array containing the indices for the traces
+    # Using regular Ultima Gold
+    PSDlowC = 0.0
 
-    fig_psdE2, ax_psdE2 = plt.subplots(layout = 'constrained')
-    h2 = ax_psdE2.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
-    fig_psdE2.colorbar(h2[3])
-    ax_psdE2.plot(xline, PSDlowlineA, color='black', linewidth = 3)
-    ax_psdE2.plot(xline, PSDhighlineA, color='black', linewidth = 3)
-    ax_psdE2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
-    #ax_psdE2.plot(ElineC, yline, color='blue', linewidth = 3 )
+    #Using Ultima Gold AB+F
+    #PSDlowC = 0.1
+    PSDhighC = PSDlowA
+    print(len(xline), ' ',len(PSDlowlineA))
+    #energy_filtC, tracesind_filtC, psd_parameter_filtC = Ecut(energy_nocosmic, psd_parameter_nocosmic, 50, PSDlowC, PSDhighC)
+    energy_filtC, tracesind_filtC, psd_parameter_filtC = PSDcutC(xline, PSDlowlineA, PSDlowC, 50, energy_nocosmic, psd_parameter_nocosmic)
+    print("Events inside the energy cut (C): ", len(energy_filtC))
+    print("Rate of events inside cut C (/s): ", len(energy_filtC) / (runtime))  # Use the run time
+    print("")
+    energy_filtC = np.array(energy_filtC)
+    psd_parameter_filtC = np.array(psd_parameter_filtC)
+
+    fig_psdE2 = plt.figure()
+    h2 = plt.hist2d(energy_nocosmic, psd_parameter_nocosmic, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1, rasterized=True)
+    #fig_psdE2.colorbar(h2[3])
+    plt.plot(xline, PSDlowlineA, color='black', linewidth = 3)
+    plt.plot(xlinehigh, PSDhighlineA, color='black', linewidth = 3)
+    #ax_psdE2.plot(xlineB, PSDlineB, color='red', linewidth = 3, zorder = 10)
     plt.ylim([0, 1])
     plt.xlim([0,4095])
+    plt.ylabel('PSD parameter',fontsize=20)
+    plt.xlabel('ADC Channel',fontsize=20)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    cb_ax = fig_psdE2.add_axes([.92, .11, .028, .77])
+    fig_psdE2.colorbar(h2[3], orientation='vertical', cax=cb_ax)
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_PSDvsE_Gates.eps", format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_PSDvsE_Gates.png", format='png')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_PSDvsE_Gates.svg", format='svg')
+    plt.show()
 
+    # Plots the filtered energy data for cut A
+    fig_filtEA, ax_filtEA = plt.subplots()
+    (data_entries, bins, patches) = ax_filtEA.hist(energy_filtA, bins=nbins, range = [0,4095])
+    ax_filtEA.set_xlabel('ADC Channel',fontsize=20)
+    ax_filtEA.set_ylabel('Counts',fontsize=20)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.xlim(0,4095)
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_E_FiltA.eps", format='eps')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_E_FiltA.png", format='png')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_E_FiltA.svg", format='svg')
+
+    plt.show()
+
+    fig_psdE2, ax_psdE2 = plt.subplots()
+    h2 = ax_psdE2.hist2d(energy_filtC, psd_parameter_filtC, bins=[nbins,500], range=[[0,4095], [0,1]], norm=mpl.colors.LogNorm(), cmin = 1)
+    fig_psdE2.colorbar(h2[3])
+    plt.ylim([0, 1])
+    plt.xlim([0,4095])
     ax_psdE2.set_ylabel('PSD parameter',fontsize=20)
     ax_psdE2.set_xlabel('ADC Channel',fontsize=20)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_PSDvsE_Gates.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_PSDvsE_Gates.png", format='png')
     plt.show()
 
-
     # Plots the filtered energy data for cut A
-    fig_filtEA, ax_filtEA = plt.subplots(layout = 'constrained')
+    fig_filtEA, ax_filtEA = plt.subplots()
     (data_entries, bins, patches) = ax_filtEA.hist(energy_filtA, bins=nbins, range = [0,4095])
     ax_filtEA.set_xlabel('ADC Channel')
     ax_filtEA.set_ylabel('Counts')
     plt.show()
-
 
     # Array that holds all values within the PSD cuts
     energy_filtTot = np.concatenate((energy_filtA, energy_filtB, energy_filtC))
@@ -655,7 +788,7 @@ def main():
     xspace = np.linspace(lower_bound, upper_bound, 1000)
 
     # Plots the hitogram and fitted function
-    fitplt, fitax = plt.subplots(layout = 'constrained')
+    fitplt, fitax = plt.subplots()
     fitax.hist(energy_filtA, bins=nbins, range = [0,4095], label = r'$\alpha$ Events')
     fitax.plot(xspace, TripleGaussFit(xspace, *E_param), linewidth=2.5, label=r'3 Gaussian Fit')
     fitax.plot(xspace, GaussFit(xspace, E_param[0], E_param[1], E_param[2]), linewidth=2.5, label=r'$^{223}$Ra $\alpha$ fit')
@@ -672,6 +805,7 @@ def main():
     plt.yticks(fontsize=15)
     plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Fit.eps", format='eps')
     plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Fit.png", format='png')
+    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Fit.svg", format='svg')
     plt.show()
 
     # Calculates the integral
@@ -718,6 +852,14 @@ def main():
     print('Peak 1 counts: ', IntRat1*sumalpha)
     print('Peak 2 counts: ', IntRat2*sumalpha)
     print('Peak 3 counts: ', IntRat3*sumalpha)
+
+    # Peak ratios relative to peak2
+    print('peaks 1/2: ', IntRat1*sumalpha/(IntRat2*sumalpha))
+    print('peaks 3/2: ', IntRat3*sumalpha/(IntRat2*sumalpha))
+
+    # Ratio of cuts A/C
+    print()
+    print('PSD gates A/C: ', len(energy_filtA)/len(energy_filtC))
 
     # Calculate the activity based on the run time
     # Could make it automatic, use timestamp[last] - timestamp[0] but that would be slightly off
