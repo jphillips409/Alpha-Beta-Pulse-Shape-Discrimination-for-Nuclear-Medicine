@@ -12,6 +12,7 @@ import numpy as np
 from matplotlib.pylab import *
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from brokenaxes import brokenaxes
 import matplotlib.cm as cm
 from scipy.integrate import quad
 import matplotlib as mpl
@@ -151,11 +152,82 @@ def main():
     plt.ylim(0,160)
     plt.xlim(0,20)
     plt.xticks(np.arange(0,20.01,5))
-    ax_InjecCurve.legend(loc='lower right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_XofigoInjec.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_XofigoInjec.png", format='png')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_XofigoInjec.svg", format='svg')
+    ax_InjecCurve.legend(loc='upper right')
+    plt.savefig(r"../PaperFigures/Ra223_XofigoInjec.eps", format='eps')
+    plt.savefig(r"../PaperFigures/Ra223_XofigoInjec.png", format='png')
+    plt.savefig(r"../PaperFigures/Ra223_XofigoInjec.svg", format='svg')
     plt.show()
+
+    # Same plot but with broken x-axis for sample A
+    # Sample A is 4th, 4 weeks to days
+    Xofigo_ExtractTime_p1_alt = np.array([0,0.003472222,0.006944444,0.010416667,4*7])
+    Xofigo_SpecCPS_p1_alt = np.array([0,95.17629003,141.01649217,138.32661061,0.1432878935035594])
+    Xofigo_SpecCPS_Un_p1_alt = np.array([0,0.30052191,0.34886375,0.30816193,0.005107662055913162])
+
+    Xofigo_ExtractTime_p2_alt = np.array([0,0.003472222,0.006944444,0.010416667,4*7])
+    Xofigo_SpecCPS_p2_alt = np.array([0,71.78955011,147.96297998,119.75676454,0.062296104400268504])
+    Xofigo_SpecCPS_Un_p2_alt = np.array([0,0.44239587,0.33709449,0.31224479,0.003572928654088496])
+
+
+    fit_InjecCurve_alt, (InjecCurve_ax1_alt, InjecCurve_ax2_alt) = plt.subplots(1, 2, sharey=True, width_ratios=[3, 1])
+    fit_InjecCurve_alt.subplots_adjust(wspace=0.05)  # adjust space between axes
+
+    InjecCurve_ax1_alt.scatter(Xofigo_ExtractTime_p1_alt*24*60, Xofigo_SpecCPS_p1_alt, linewidth = 2.5, color='blue',label='Patient 1')
+    InjecCurve_ax1_alt.errorbar(Xofigo_ExtractTime_p1_alt*24*60, Xofigo_SpecCPS_p1_alt, yerr=Xofigo_SpecCPS_Un_p1_alt, color='blue', ls='none',  capsize=3, capthick=1, ecolor='blue')
+    InjecCurve_ax2_alt.scatter(Xofigo_ExtractTime_p1_alt*24*60, Xofigo_SpecCPS_p1_alt, linewidth = 2.5, color='blue',label='Patient 1')
+    InjecCurve_ax2_alt.errorbar(Xofigo_ExtractTime_p1_alt*24*60, Xofigo_SpecCPS_p1_alt, yerr=Xofigo_SpecCPS_Un_p1_alt, color='blue', ls='none',  capsize=3, capthick=1, ecolor='blue')
+    InjecCurve_ax1_alt.scatter(Xofigo_ExtractTime_p2_alt * 24 * 60, Xofigo_SpecCPS_p2_alt, linewidth=2.5, color='red',
+                          label='Patient 2')
+    InjecCurve_ax1_alt.errorbar(Xofigo_ExtractTime_p2_alt * 24 * 60, Xofigo_SpecCPS_p2_alt, yerr=Xofigo_SpecCPS_Un_p2_alt, color='red',
+                           ls='none', capsize=3, capthick=1, ecolor='red')
+    InjecCurve_ax2_alt.scatter(Xofigo_ExtractTime_p2_alt * 24 * 60, Xofigo_SpecCPS_p2_alt, linewidth=2.5, color='red',
+                          label='Patient 2')
+    InjecCurve_ax2_alt.errorbar(Xofigo_ExtractTime_p2_alt * 24 * 60, Xofigo_SpecCPS_p2_alt, yerr=Xofigo_SpecCPS_Un_p2_alt, color='red',
+                           ls='none', capsize=3, capthick=1, ecolor='red')
+    # 3rd patient, say 6 min
+    InjecCurve_ax1_alt.scatter([0,6], [0,45.4875], linewidth=2.5, color='green',
+                               label='Patient 3')
+    InjecCurve_ax1_alt.errorbar([0,6], [0,45.4875],
+                                yerr=[0,45.4875*0.0126], color='green',
+                                ls='none', capsize=3, capthick=1, ecolor='green')
+    InjecCurve_ax2_alt.scatter([0,6], [0,45.4875], linewidth=2.5, color='green',
+                               label='Patient 3')
+    InjecCurve_ax2_alt.errorbar([0,6], [0,45.4875],
+                                yerr=[0,45.4875*0.0126], color='green',
+                                ls='none', capsize=3, capthick=1, ecolor='green')
+    InjecCurve_ax1_alt.set_xlim(-1, 19.9)  # outliers only
+    InjecCurve_ax2_alt.set_xlim(4*7*24*60,4*7*24*60)  # most of the data
+
+    InjecCurve_ax1_alt.tick_params(labelright=False)  # don't put tick labels at the top
+    InjecCurve_ax2_alt.tick_params(labelleft=False)  # don't put tick labels at the top
+    InjecCurve_ax1_alt.tick_params(right=False, which='both')  # don't put tick labels at the top
+    InjecCurve_ax2_alt.tick_params(left=False, which='both')  # don't put tick labels at the top
+    InjecCurve_ax1_alt.spines['right'].set_visible(False)
+    InjecCurve_ax2_alt.spines['left'].set_visible(False)
+
+    ratio = 3
+    d = .02  # Size of diagonal lines
+    kwargs = dict(transform=InjecCurve_ax1_alt.transAxes, color='k', clip_on=False)
+    InjecCurve_ax1_alt.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # Bottom-right break
+    InjecCurve_ax1_alt.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # Top-right break
+
+    kwargs.update(transform=InjecCurve_ax2_alt.transAxes)
+    InjecCurve_ax2_alt.plot((-d*ratio, +d*ratio), (1 - d, 1 + d), **kwargs)  # Top-left break
+    InjecCurve_ax2_alt.plot((-d*ratio, +d*ratio), (-d, +d), **kwargs)  # Bottom-left break
+    InjecCurve_ax2_alt.set_xticks([4*7*24*60],labels=["4 weeks"])
+    fit_InjecCurve_alt.supxlabel('Time Since Injection (min)',y=-0.01,x=0.51,fontsize=20)
+    InjecCurve_ax1_alt.set_ylabel('Specific Activity (CPS/g)',fontsize=20)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+
+    InjecCurve_ax1_alt.set_ylim(-10,200)
+    InjecCurve_ax2_alt.set_ylim(-10,200)
+    InjecCurve_ax2_alt.legend(bbox_to_anchor=(0.95, 0.98),loc='upper right',fontsize = 12)
+    plt.savefig(r"../PaperFigures/Ra223_XofigoInjec_alt.eps", format='eps')
+    plt.savefig(r"../PaperFigures/Ra223_XofigoInjec_alt.png", format='png')
+    plt.savefig(r"../PaperFigures/Ra223_XofigoInjec_alt.svg", format='svg')
+    plt.show()
+
 
     # Plot Sample D (use as initial) and Sample A (use as final)
     # MUST USE SPECIFIC ACTIVITIES
@@ -173,11 +245,12 @@ def main():
     fit_paramEffHL, fit_covEffHL = curve_fit(RaDecayWithBio, xdata = Xofigo_HLtimes, ydata = Xofigo_HLCPS_log, maxfev = 100000)
     print('****************************************')
     print('Patient 1')
-    print('Initial activity: ', Xofigo_HLCPS[0], ' Activity after 4 weeks: ', Xofigo_HLCPS[1])
+    print('Initial activity: ', Xofigo_HLCPS[0], ' Activity after 4 weeks: ', Xofigo_HLCPS[1], ' +/- ', Xofigo_HLCPS[1]*Final_CPS_relerr)
     print('Extracted Bio HL: ', fit_paramEffHL[0])
     print('Effective HL: ', (11.4352*fit_paramEffHL[0])/(11.4352+fit_paramEffHL[0]))
     xspace = np.linspace(0, Xofigo_HLtimes[-1], 100)
 
+    #fitpltBioHL, fitaxBioHL = plt.subplots(figsize=(6.4,10.0997))
     fitpltBioHL, fitaxBioHL = plt.subplots()
     fitaxBioHL.scatter(Xofigo_HLtimes, Xofigo_HLCPS_log, linewidth=2.5, label='Data',
                        color='black')
@@ -185,21 +258,21 @@ def main():
                         #ls='none',
                         #capsize=3, capthick=1,
                         #ecolor='black')
-    fitaxBioHL.plot(xspace, LnCurve(xspace, np.log(2)/11.4352), label=r'Physical $t_{1/2}$', color='blue',
+    fitaxBioHL.plot(xspace, LnCurve(xspace, np.log(2)/11.4352), label=r'Physical $t_{1/2}=11.44$ d', color='blue',
                     linestyle='dashed')
-    fitaxBioHL.plot(xspace, LnCurve(xspace, np.log(2)/3.750151), label=r'Partial Biological $t_{1/2}$', color='red',
+    fitaxBioHL.plot(xspace, LnCurve(xspace, np.log(2)/3.750151), label=r'Partial Biological $t_{1/2}=3.75$ d', color='red',
                     linestyle='dashed')
-    fitaxBioHL.plot(xspace, RaDecayWithBio(xspace, *fit_paramEffHL), label=r'Total Biological $t_{1/2}$', color='green',
+    fitaxBioHL.plot(xspace, RaDecayWithBio(xspace, *fit_paramEffHL), label=r'Total Biological $t_{1/2}=2.82$ d', color='green',
                     linestyle='dashed')
     fitaxBioHL.set_xlabel('Time (days)',fontsize=20)
     fitaxBioHL.set_ylabel(r'Ln(CPS/CPS$_{0}$)',fontsize=20)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-    #plt.ylim(-8,0)
-    fitaxBioHL.legend(loc='lower left')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Patient1_BioHL.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Patient1_BioHL.png", format='png')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Patient1_BioHL.svg", format='svg')
+    plt.ylim(-8,0.5)
+    fitaxBioHL.legend(loc='lower left',fontsize=12)
+    plt.savefig(r"../PaperFigures/Ra223_Patient1_BioHL.eps", format='eps')
+    plt.savefig(r"../PaperFigures/Ra223_Patient1_BioHL.png", format='png')
+    plt.savefig(r"../PaperFigures/Ra223_Patient1_BioHL.svg", format='svg')
     plt.show()
 
     print('LN uncertainty of initial and final: ', np.sqrt(Final_CPS_relerr**2 + (Xofigo_SpecCPS_Un[2]/Xofigo_SpecCPS[2])**2))
@@ -233,7 +306,7 @@ def main():
                                              maxfev=100000)
     print('****************************************')
     print('Patient 2')
-    print('Initial activity: ', Xofigo_HLCPS_p2[0], ' Activity after 4 weeks: ', Xofigo_HLCPS_p2[1])
+    print('Initial activity: ', Xofigo_HLCPS_p2[0], ' Activity after 4 weeks: ', Xofigo_HLCPS_p2[1], ' +/- ', Xofigo_HLCPS_p2[1]*Final_CPS_relerr_p2)
     print('Extracted Bio HL: ', fit_paramEffHL_p2[0])
     print('Effective HL: ', (11.4352 * fit_paramEffHL_p2[0]) / (11.4352 + fit_paramEffHL_p2[0]))
     xspace = np.linspace(0, Xofigo_HLtimes_p2[-1], 100)
@@ -256,9 +329,9 @@ def main():
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     fitaxBioHL_p2.legend(loc='lower left')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Patient2_BioHL.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Patient2_BioHL.png", format='png')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_Patient2_BioHL.svg", format='svg')
+    plt.savefig(r"../PaperFigures/Ra223_Patient2_BioHL.eps", format='eps')
+    plt.savefig(r"../PaperFigures/Ra223_Patient2_BioHL.png", format='png')
+    plt.savefig(r"../PaperFigures/Ra223_Patient2_BioHL.svg", format='svg')
     plt.show()
 
     print('LN uncertainty of initial and final: ',
@@ -290,9 +363,9 @@ def main():
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     fitaxBioHL_all.legend(loc='lower left')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_AllPatients_BioHL.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_AllPatients_BioHL.png", format='png')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_AllPatients_BioHL.svg", format='svg')
+    plt.savefig(r"../PaperFigures/Ra223_AllPatients_BioHL.eps", format='eps')
+    plt.savefig(r"../PaperFigures/Ra223_AllPatients_BioHL.png", format='png')
+    plt.savefig(r"../PaperFigures/Ra223_AllPatients_BioHL.svg", format='svg')
     plt.show()
 
     # Tracking the decay of the pre-injection samples
@@ -302,24 +375,29 @@ def main():
     # Fit to LN curve
     xspace = np.linspace(0, XofigoP1_Pre_Days[-1], 100)
     fit_paramP1_Pre, fit_covP1_Pre = curve_fit(LnCurve, xdata = XofigoP1_Pre_Days, ydata = XofigoP1_Pre_LN, maxfev = 100000)
+    errP1_pre = np.sqrt(np.diag(fit_covP1_Pre))
 
-    fitpltP1_Pre, fitaxP1_Pre = plt.subplots(figsize=(6.4,10.0997))
-    fitaxP1_Pre.scatter(XofigoP1_Pre_Days, XofigoP1_Pre_LN, linewidth=2.5, label='Data',
+    #fitpltP1_Pre, fitaxP1_Pre = plt.subplots(figsize=(6.4,10.0997))
+    fitpltP1_Pre, fitaxP1_Pre = plt.subplots()
+    fitaxP1_Pre.scatter(XofigoP1_Pre_Days, XofigoP1_Pre_LN, linewidth=2.5, label='Patient 1 Data',
                        color='blue')
     fitaxP1_Pre.errorbar(XofigoP1_Pre_Days, XofigoP1_Pre_LN, yerr=XofigoP1_Pre_LN_err, color='blue',
                         ls='none',
                         capsize=3, capthick=1,
                         ecolor='blue')
     fitaxP1_Pre.plot(xspace, LnCurve(xspace, fit_paramP1_Pre), color='blue',
-                    linestyle='dashed')
+                    linestyle='dashed',label=r'$t_{1/2}=13.44$ d')
     fitaxP1_Pre.set_xlabel('Time (days)',fontsize=20)
     fitaxP1_Pre.set_ylabel(r'Ln(CPS/CPS$_{0}$)',fontsize=20)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     #plt.ylim(-8,0)
-    #fitaxP1_Pre.legend(loc='lower left')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_DecayCurve_PreInject.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_DecayCurve_PreInject.png", format='png')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Ra223_DecayCurve_PreInject.svg", format='svg')
+    fitaxP1_Pre.legend(loc='lower left',fontsize=12)
+    plt.savefig(r"../PaperFigures/Ra223_DecayCurve_PreInject.eps", format='eps')
+    plt.savefig(r"../PaperFigures/Ra223_DecayCurve_PreInject.png", format='png')
+    plt.savefig(r"../PaperFigures/Ra223_DecayCurve_PreInject.svg", format='svg')
     plt.show()
+
+    print('Half-life for patient 1 sample A: ', np.log(2)/fit_paramP1_Pre, ' +/- ', (errP1_pre/fit_paramP1_Pre)*np.log(2)/fit_paramP1_Pre)
+
 main()

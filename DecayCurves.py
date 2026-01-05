@@ -43,7 +43,7 @@ plt.rcParams['ytick.minor.right'] = True
 plt.rcParams['ytick.minor.left'] = True
 plt.rcParams['ytick.minor.visible'] = True
 
-plt.rcParams['font.size'] = 14
+plt.rcParams['font.size'] = 15
 plt.rcParams['axes.titlepad'] = 15
 
 def LinCurve(x, a, t):
@@ -118,9 +118,9 @@ def main():
     cmmapable = cm.ScalarMappable(norm, my_cmap)
     cmmapable.set_array(range(min_val, max_val))
 
-    fitpltPb, fitaxPb = plt.subplots(layout = 'constrained')
+    fitpltPb, fitaxPb = plt.subplots()
     fitaxPb.scatter(Pb212_days, Pb212_LN, linewidth = 2.5, label='$^{212}$Pb Data', color='black')
-    fitaxPb.plot(xspace,LnCurve(xspace,*fit_paramPb), label='Linear Fit', color='red', linestyle='dashed')
+    fitaxPb.plot(xspace,LnCurve(xspace,*fit_paramPb), label=r'$t_{1/2}=10.60$ h', color='red', linestyle='dashed')
     fitaxPb.errorbar(Pb212_days, Pb212_LN, yerr=Pb212_LN_err, color='black', ls='none',  capsize=3, capthick=1, ecolor='black')
     fitaxPb.set_xlabel('Time Since First Sample (Days)',fontsize=20)
     fitaxPb.set_ylabel('Ln(CPS/CPS$_{0}$)',fontsize=20)
@@ -136,12 +136,12 @@ def main():
            # a.set_linewidth(0)
        # except:
            # pass
-    fitaxPb.legend(loc='upper right',fontsize=18)
+    fitaxPb.legend(loc='upper right',fontsize=12)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.png", format='png')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve.svg", format='svg')
+    plt.savefig(r"../PaperFigures/Pb212_DecayCurve.eps", format='eps')
+    plt.savefig(r"../PaperFigures/Pb212_DecayCurve.png", format='png')
+    plt.savefig(r"../PaperFigures/Pb212_DecayCurve.svg", format='svg')
 
     fitpltPb.show()
 
