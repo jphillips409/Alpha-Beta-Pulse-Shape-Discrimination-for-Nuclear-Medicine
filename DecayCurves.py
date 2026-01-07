@@ -43,8 +43,12 @@ plt.rcParams['ytick.minor.right'] = True
 plt.rcParams['ytick.minor.left'] = True
 plt.rcParams['ytick.minor.visible'] = True
 
-plt.rcParams['font.size'] = 15
+plt.rcParams['font.size'] = 14
 plt.rcParams['axes.titlepad'] = 15
+
+# Filepath for figures
+filepath = Path('Paper_Figures') # Go outside of directory and enter Paper_Figures
+filepath = '..' / filepath
 
 def LinCurve(x, a, t):
 
@@ -136,12 +140,12 @@ def main():
            # a.set_linewidth(0)
        # except:
            # pass
-    fitaxPb.legend(loc='upper right',fontsize=12)
+    fitaxPb.legend(loc='upper right',fontsize=18)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-    plt.savefig(r"../PaperFigures/Pb212_DecayCurve.eps", format='eps')
-    plt.savefig(r"../PaperFigures/Pb212_DecayCurve.png", format='png')
-    plt.savefig(r"../PaperFigures/Pb212_DecayCurve.svg", format='svg')
+    plt.savefig(filepath / "Pb212_DecayCurve.eps", format='eps')
+    plt.savefig(filepath / "Pb212_DecayCurve.png", format='png')
+    plt.savefig(filepath / "Pb212_DecayCurve.svg", format='svg')
 
     fitpltPb.show()
 
@@ -160,8 +164,8 @@ def main():
     fitaxPb_hl.set_xlabel('Half-Lives Since First Sample')
     fitaxPb_hl.set_ylabel('Ln(CPS/CPS$_{0}$)')
     fitaxPb_hl.legend(loc='upper right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve_HalfLife.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_DecayCurve_HalfLife.png", format='png')
+    plt.savefig(filepath / "Pb212_DecayCurve_HalfLife.eps", format='eps')
+    plt.savefig(filepath / "Pb212_DecayCurve_HalfLife.png", format='png')
     fitpltPb_hl.show()
 
 
@@ -317,8 +321,8 @@ def main():
     fitaxPb_CBlood.set_ylabel('Ln(CPS/CPS$_{0}$)')
 
     fitaxPb_CBlood.legend(loc='upper right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve.png", format='png')
+    plt.savefig(filepath / "Pb212_CBlood_DecayCurve.eps", format='eps')
+    plt.savefig(filepath / "Pb212_CBlood_DecayCurve.png", format='png')
     fitpltPb_CBlood.show()
 
     Pb212_CBlood_err = np.sqrt(np.diag(fit_covPb_CBlood))
@@ -338,10 +342,8 @@ def main():
     fitaxPb_CBlood_hl.set_xlabel('Half-Lives Since First Sample')
     fitaxPb_CBlood_hl.set_ylabel('Ln(CPS/CPS$_{0}$)')
     fitaxPb_CBlood_hl.legend(loc='upper right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve_HalfLife.eps",
-                format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_CBlood_DecayCurve_HalfLife.png",
-                format='png')
+    plt.savefig(filepath / "Pb212_CBlood_DecayCurve_HalfLife.eps",format='eps')
+    plt.savefig(filepath / "Pb212_CBlood_DecayCurve_HalfLife.png",format='png')
     fitpltPb_CBlood_hl.show()
 
     # Pb212 Gamma Counter Data
@@ -382,8 +384,8 @@ def main():
     fitaxPb_GC.set_ylabel('Ln(CPS/CPS$_{0}$)')
 
     fitaxPb_GC.legend(loc='upper right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve.eps", format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve.png", format='png')
+    plt.savefig(filepath / "Pb212_GC_DecayCurve.eps", format='eps')
+    plt.savefig(filepath / "Pb212_GC_DecayCurve.png", format='png')
     fitpltPb_GC.show()
 
     Pb212_GC_err = np.sqrt(np.diag(fit_covPb_GC))
@@ -401,10 +403,8 @@ def main():
     fitaxPb_GC_hl.set_xlabel('Half-Lives Since First Sample')
     fitaxPb_GC_hl.set_ylabel('Ln(CPS/CPS$_{0}$)')
     fitaxPb_GC_hl.legend(loc='upper right')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.eps",
-                format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.png",
-                format='png')
+    plt.savefig(filepath / "Pb212_GC_DecayCurve_HalfLife.eps",format='eps')
+    plt.savefig(filepath / "Pb212_GC_DecayCurve_HalfLife.png",format='png')
     fitpltPb_GC_hl.show()
 
     # Pb212 GC Data
@@ -461,10 +461,8 @@ def main():
     fitaxPb_triple.legend(loc='upper right',fontsize=22)
     #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.eps",
                 #format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.png",
-                format='png')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.svg",
-                format='svg')
+    plt.savefig(filepath / "Pb212_Combined_DecayCurve_HalfLife.png",format='png')
+    plt.savefig(filepath / "Pb212_Combined_DecayCurve_HalfLife.svg",format='svg')
     fitpltPb_triple.show()
 
     #2 Pb curves together
@@ -493,10 +491,9 @@ def main():
     plt.gca().set_box_aspect(1)
 
     fitaxPb_triple.legend(loc='upper right',fontsize=18)
-    #plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_HPGe_DecayCurve_HalfLife.eps",
+    #plt.savefig(filepath / "Pb212_HPGe_DecayCurve_HalfLife.eps",
                 #format='eps')
-    plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.png",
-                format='png')
+    #plt.savefig(filepath / "Pb212_Combined_DecayCurve_HalfLife.png",format='png')
     fitpltPb_triple.show()
 
 
@@ -511,47 +508,69 @@ def main():
     Pb212_ChelatedUrine_1_5hrs_LN = np.array(Pb212_ChelatedUrine_1_5hrs_LN)
     Pb212_ChelatedUrine_1_5hrs_LN_err = [0,0.001721186,0.004566384,0.00802412,0.01383641]
 
-    Pb212_ChelatedUrine_24hrs = [0,0.983333333,2.15,3.8,5.333333333]
+    Pb212_ChelatedUrine_24hrs = [0,1.166666667,2.816666667,4.35]
     Pb212_ChelatedUrine_24hrs = np.array(Pb212_ChelatedUrine_24hrs)
-    Pb212_ChelatedUrine_24hrs_LN = [0,-0.340889028,-1.123560343,-2.243375499,-3.252513196]
+    Pb212_ChelatedUrine_24hrs_LN = [0,-0.782671315,-1.902486471,-2.911624168]
     Pb212_ChelatedUrine_24hrs_LN = np.array(Pb212_ChelatedUrine_24hrs_LN)
-    Pb212_ChelatedUrine_24hrs_LN_err = [0,0.000904626,0.004409681,0.015412656,0.037010594]
+    Pb212_ChelatedUrine_24hrs_LN_err = [0,0.00307178,0.013070647,0.033131592]
 
-    Pb212_ChelatedUrine_48hrs = [0,1.033333333,2.05,3.083333333,4.083333333,5.083333333]
+    Pb212_ChelatedUrine_48hrs = [0,1.016666667,2.05,3.05,4.05]
     Pb212_ChelatedUrine_48hrs = np.array(Pb212_ChelatedUrine_48hrs)
-    Pb212_ChelatedUrine_48hrs_LN = [0,-0.350530553,-1.031150118,-1.732924117,-2.385944941,-3.001152341]
+    Pb212_ChelatedUrine_48hrs_LN = [0,-0.680619564,-1.382393564,-2.035414388,-2.650621788]
     Pb212_ChelatedUrine_48hrs_LN = np.array(Pb212_ChelatedUrine_48hrs_LN)
-    Pb212_ChelatedUrine_48hrs_LN_err = [0,0.001321478,0.005463243,0.013040568,0.024887372,0.042579176]
+    Pb212_ChelatedUrine_48hrs_LN_err = [0,0.003606061,0.010402762,0.021231049,0.037605985]
+
+    # Fit each data set, don't need to plot
+    fit_paramPb_ChelatedUrine_1_5hrs, fit_covPb_ChelatedUrine_1_5hrs = curve_fit(LnCurve, xdata=Pb212_ChelatedUrine_1_5hrs, ydata=Pb212_ChelatedUrine_1_5hrs_LN, maxfev=100000)
+    fit_paramPb_ChelatedUrine_24hrs, fit_covPb_ChelatedUrine_24hrs = curve_fit(LnCurve, xdata=Pb212_ChelatedUrine_24hrs, ydata=Pb212_ChelatedUrine_24hrs_LN, maxfev=100000)
+    fit_paramPb_ChelatedUrine_48hrs, fit_covPb_ChelatedUrine_48hrs = curve_fit(LnCurve, xdata=Pb212_ChelatedUrine_48hrs, ydata=Pb212_ChelatedUrine_48hrs_LN, maxfev=100000)
+
+    Pb_ChelatedUrine_1_5hrs_HL = np.abs(np.log(2)/fit_paramPb_ChelatedUrine_1_5hrs[0])*60
+    Pb_ChelatedUrine_24hrs_HL = np.abs(np.log(2)/fit_paramPb_ChelatedUrine_24hrs[0])*60
+    Pb_ChelatedUrine_48hrs_HL = np.abs(np.log(2)/fit_paramPb_ChelatedUrine_48hrs[0])*60
+
+    Pb_ChelatedUrine_1_5hrs_err = np.sqrt(np.diag(fit_covPb_ChelatedUrine_1_5hrs))
+    Pb_ChelatedUrine_24hrs_err = np.sqrt(np.diag(fit_covPb_ChelatedUrine_24hrs))
+    Pb_ChelatedUrine_48hrs_err = np.sqrt(np.diag(fit_covPb_ChelatedUrine_48hrs))
+
+    print('')
+    print('Chelated Urine Half-Lives')
+    print('1.5 hrs post injection half-life (min): ', Pb_ChelatedUrine_1_5hrs_HL, ' +/- ', np.abs(Pb_ChelatedUrine_1_5hrs_err[0]/fit_paramPb_ChelatedUrine_1_5hrs[0])*Pb_ChelatedUrine_1_5hrs_HL)
+    print('24 hrs post injection half-life (min): ', Pb_ChelatedUrine_24hrs_HL, ' +/- ', np.abs(Pb_ChelatedUrine_24hrs_err[0]/fit_paramPb_ChelatedUrine_24hrs[0])*Pb_ChelatedUrine_24hrs_HL)
+    print('48 hrs post injection half-life (min): ', Pb_ChelatedUrine_48hrs_HL, ' +/- ', np.abs(Pb_ChelatedUrine_48hrs_err[0]/fit_paramPb_ChelatedUrine_48hrs[0])*Pb_ChelatedUrine_48hrs_HL)
+
+    xspace = np.linspace(0,  Pb212_ChelatedUrine_24hrs[-1], 100)
 
     scattersize = 1
-    fitpltPb_ChelatedUrine, fitaxPb_ChelatedUrine = plt.subplots(layout='constrained')
-    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_1_5hrs, Pb212_ChelatedUrine_1_5hrs_LN, linewidth=1, label='1.5 hrs Post Injection', color='red',
+    fitpltPb_ChelatedUrine, fitaxPb_ChelatedUrine = plt.subplots()
+    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_1_5hrs, Pb212_ChelatedUrine_1_5hrs_LN, linewidth=2.5, label=r'1.5 hrs $t_{1/2}=63$ m', color='red',
                            marker='^')
     fitaxPb_ChelatedUrine.errorbar(Pb212_ChelatedUrine_1_5hrs, Pb212_ChelatedUrine_1_5hrs_LN, yerr=Pb212_ChelatedUrine_1_5hrs_LN_err, xerr=None, color='red', ls='none',
-                            capsize=3, capthick=1,
+                            capsize=4, capthick=2,
                             ecolor='red')
-    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_24hrs, Pb212_ChelatedUrine_24hrs_LN, linewidth=1, label='24 hrs Post Injection', color='Black',
+    fitaxPb_ChelatedUrine.plot(xspace, LnCurve(xspace, *fit_paramPb_ChelatedUrine_1_5hrs), color='red',
+                  linestyle='dashed')
+    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_24hrs, Pb212_ChelatedUrine_24hrs_LN, linewidth=2.5, label=r'24 hrs $t_{1/2}=62$ m', color='Black',
                            marker='D')
     fitaxPb_ChelatedUrine.errorbar(Pb212_ChelatedUrine_24hrs, Pb212_ChelatedUrine_24hrs_LN, yerr=Pb212_ChelatedUrine_24hrs_LN_err, xerr=None, color='Black',
                             ls='none',
-                            capsize=3, capthick=1,
+                            capsize=4, capthick=2,
                             ecolor='Black')
-    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_48hrs, Pb212_ChelatedUrine_48hrs_LN, linewidth=1, label='48 hrs Post Injection', color='blue')
+    fitaxPb_ChelatedUrine.plot(xspace, LnCurve(xspace, *fit_paramPb_ChelatedUrine_24hrs), color='black',
+                  linestyle='dashed')
+    fitaxPb_ChelatedUrine.scatter(Pb212_ChelatedUrine_48hrs, Pb212_ChelatedUrine_48hrs_LN, linewidth=2.5, label=r'48 hrs $t_{1/2}=63$ m', color='blue')
     fitaxPb_ChelatedUrine.errorbar(Pb212_ChelatedUrine_48hrs, Pb212_ChelatedUrine_48hrs_LN, yerr=Pb212_ChelatedUrine_48hrs_LN_err, xerr=None, color='blue', ls='none',
-                            capsize=3, capthick=1,
+                            capsize=4, capthick=2,
                             ecolor='blue')
-    fitaxPb_ChelatedUrine.set_xlabel('Hours Since First Sample')
-    fitaxPb_ChelatedUrine.set_ylabel('Ln(CPS/CPS$_{0}$)')
+    fitaxPb_ChelatedUrine.plot(xspace, LnCurve(xspace, *fit_paramPb_ChelatedUrine_48hrs), color='blue',
+                  linestyle='dashed')
+    fitaxPb_ChelatedUrine.set_xlabel('Hours Since First Sample',fontsize=20)
+    fitaxPb_ChelatedUrine.set_ylabel('Ln(CPS/CPS$_{0}$)',fontsize=20)
 
     fitaxPb_ChelatedUrine.legend(loc='upper right')
-    # plt.savefig(r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_GC_DecayCurve_HalfLife.eps",
-    # format='eps')
-   # plt.savefig(
-      #  r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.png",
-      #  format='png')
-   # plt.savefig(
-     #   r"C:\Users\j.s.phillips\Documents\Thorek_PSDCollab\Paper_Figures\Pb212_Combined_DecayCurve_HalfLife.svg",
-      #  format='svg')
+    plt.savefig(filepath / "Pb212_ChelatedUrine_HalfLife.eps",format='eps')
+    plt.savefig(filepath / "Pb212_ChelatedUrine_HalfLife.png",format='png')
+    plt.savefig(filepath / "Pb212_ChelatedUrine_HalfLife.svg",format='svg')
     fitpltPb_ChelatedUrine.show()
 
 
@@ -567,20 +586,23 @@ def main():
 
     fit_paramFPb, fit_covFPb = curve_fit(Bi212TransEq, xdata = FreePb212_24hrs_hours, ydata = FreePb212_24hrs_CPS, maxfev = 100000)
 
+    Pb_FreeUrine_24hrs_err = np.sqrt(np.diag(fit_covFPb))
+
     print('')
     print('Free Pb212 24 hrs post')
-    print('Activity 1: ', fit_paramFPb[0])
-    print('Half-life 1: ', np.log(2)/fit_paramFPb[1], ' hours')
+    print('Activity 1: ', fit_paramFPb[0], ' +\- ', Pb_FreeUrine_24hrs_err[0])
+    print('Activity 2: ', fit_paramFPb[1], ' +\- ', Pb_FreeUrine_24hrs_err[1])
     print('A2/A1: ', fit_paramFPb[1]/fit_paramFPb[0])
+    print('A2/tot: ', fit_paramFPb[1]/(fit_paramFPb[0]+fit_paramFPb[1]))
     print('Atomic ratio: ', (fit_paramFPb[1]/(np.log(2)/(60.551/60)))/(fit_paramFPb[0]/(np.log(2)/(10.628))))
     #print('Activity 2: ', fit_paramFPb[2])
    # print('Half-life 2: ', np.log(2)/fit_paramFPb[3], ' hours')
 
     xspace = np.linspace(0,  FreePb212_24hrs_hours[-1], 100)
 
-    fitpltFPb, fitaxFPb = plt.subplots(layout='constrained')
-    fitaxFPb.scatter(FreePb212_24hrs_hours, FreePb212_24hrs_CPS, linewidth=2.5, label='Free $^{212}$Pb', color='black')
-    fitaxFPb.errorbar(FreePb212_24hrs_hours, FreePb212_24hrs_CPS, yerr=FreePb212_24hrs_CPSErr, color='black', ls='none', capsize=3, capthick=1,
+    fitpltFPb, fitaxFPb = plt.subplots()
+    fitaxFPb.scatter(FreePb212_24hrs_hours, FreePb212_24hrs_CPS, linewidth=3, label='Free $^{212}$Pb', color='black')
+    fitaxFPb.errorbar(FreePb212_24hrs_hours, FreePb212_24hrs_CPS, yerr=FreePb212_24hrs_CPSErr, color='black', ls='none', capsize=4, capthick=2,
                         ecolor='black')
     fitaxFPb.plot(xspace, Bi212TransEq(xspace, *fit_paramFPb), label='Composite Activity', color='red', linestyle='dashed')
     fitaxFPb.plot(xspace,PbActivity(xspace, fit_paramFPb[0]), label='Pb Decay', color='blue', linestyle='dashed')
@@ -589,11 +611,13 @@ def main():
 
 
     fitaxFPb.set_yscale('log')
-    fitaxFPb.set_xlabel('Time Since First Sample (Hours)')
-    fitaxFPb.set_ylabel('Activity (CPS)')
-    fitaxFPb.legend(loc='lower right')
+    fitaxFPb.set_xlabel('Time Since First Sample (Hours)',fontsize=20)
+    fitaxFPb.set_ylabel('Activity (CPS)',fontsize=20)
+    fitaxFPb.legend(loc='lower center')
 
-
+    plt.savefig(filepath / "Pb212_UnchelatedUrine_48hrs_HalfLife.eps",format='eps')
+    plt.savefig(filepath / "Pb212_UnchelatedUrine_48hrs_HalfLife.png",format='png')
+    plt.savefig(filepath / "Pb212_UnchelatedUrine_48hrs_HalfLife.svg",format='svg')
     fitpltFPb.show()
 
     # Free Pb-212 48 hrs post injection.
@@ -619,7 +643,7 @@ def main():
 
     xspace = np.linspace(0, FreePb212_48hrs_hours[-1], 100)
 
-    fitpltFPb48, fitaxFPb48 = plt.subplots(layout='constrained')
+    fitpltFPb48, fitaxFPb48 = plt.subplots()
     fitaxFPb48.scatter(FreePb212_48hrs_hours, FreePb212_48hrs_CPS, linewidth=2.5, label='Free $^{212}$Pb', color='black')
     fitaxFPb48.errorbar(FreePb212_48hrs_hours, FreePb212_48hrs_CPS, yerr=FreePb212_48hrs_CPSErr, color='black', ls='none',
                       capsize=3, capthick=1,
